@@ -27,20 +27,20 @@ def train(
 def train_one_epoch(
     model: nn.Module, loader: DataLoader, loss_fn, optimiser, device: str
 ):
-    for input, target in loader:
-        print("input", input.shape)
+    for inputs, targets in loader:
+        print("input", inputs.shape)
         # Send data to GPU if available
-        input = input.to(device)
-        target = target.to(device)
+        inputs = inputs.to(device)
+        targets = targets.to(device)
 
         # Predict and calculate loss
-        prediction = model(input)
-        loss = loss_fn(prediction, target)
+        prediction = model(inputs)
+        loss = loss_fn(prediction, targets)
 
         # Backpropagation
-        optimiser.zero_grad()
-        loss.backward()
-        optimiser.step()
+        optimiser.zero_grad()  # reset gradients for this iteration
+        loss.backward()  # run backprop
+        optimiser.step()  # update the weights
 
     print("loss:", loss.item())
 

@@ -45,8 +45,14 @@ class FourQDataset(Dataset):
         return int(quadrant.replace("Q", "")) - 1
 
     @staticmethod
-    def get_cuadrant_from_index(idx: int):
+    def get_quadrant_from_index(idx: int):
         return f"Q{idx+1}"
+
+    def get_input_from_sample(self, sample_index: int):
+        return self[sample_index][0]
+
+    def get_quadrant_from_sample(self, sample_index: int):
+        return self[sample_index][1]
 
     def _load_audio_signal(self, song_audio_path) -> torch.Tensor:
         signal, sr = torchaudio.load(song_audio_path)  # type: ignore
