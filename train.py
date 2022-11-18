@@ -58,7 +58,7 @@ if __name__ == "__main__":
 
     # Training parameters
     BATCH_SIZE = 512
-    EPOCHS = 10
+    EPOCHS = 1
     LEARNING_RATE = 0.001
 
     if torch.cuda.is_available():
