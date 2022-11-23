@@ -1,3 +1,4 @@
+from typing import List
 import torch
 import numpy as np
 from numpy.typing import ArrayLike
@@ -37,34 +38,51 @@ def ap_at_k(actual, predicted, k):
     return score / min(len(actual), k)
 
 
-def cumulative_gain(gains: ArrayLike):
-    array = np.asarray(gains)
+def cumulative_gain(predictions: ArrayLike):
+    array = np.asarray(predictions)
     return array.sum()
 
 
-def discounted_cumulative_gain(gains: ArrayLike):
-    gains = np.asarray(gains)
-    k = len(gains)
-    logs = np.log2(range(2, k + 1))  # THe logs are (i+1) starting with i=1
+def discounted_cumulative_gain(predictions: ArrayLike):
+    predictions = np.asarray(predictions)
+    k = len(predictions)
 
-    dcg = (gains[0] + (gains[1:] / logs)).sum()
+    logs = np.log2(np.arange(k) + 2)  # THe logs are (i+1) starting with i=1
+    dcg = (predictions / logs).sum()
     return dcg
 
 
-def idcg(gains: ArrayLike):
+def idcg(predictions: ArrayLike):
     """
     Ideal discounted cumulative gain
     """
-    ordered = np.array(gains)
+    ordered = np.array(predictions)
     ordered.sort()
     # Descending
     ordered = ordered[::-1]
     return discounted_cumulative_gain(ordered)
 
 
-def ndcg(gains: ArrayLike):
-    ideal = idcg(gains)
-    return discounted_cumulative_gain(gains) / ideal
+def ndcg(predictions: ArrayLike):
+    ideal = idcg(predictions)
+    return discounted_cumulative_gain(predictions) / ideal
+
+
+def ndcg_torch(predictions: List):
+    """
+    Alternative NDCG implementation in pytorch
+    """
+    target = predictions.copy()
+    target.sort(reverse=True)
+
+    if torch.cuda.is_available():
+        device = "cuda"
+    else:
+        device = "cpu"
+    predictions = torch.tensor(predictions).to(device)
+    target = torch.tensor(target).to(device)
+
+    return retrieval_normalized_dcg(predictions, target)
 
 
 if __name__ == "__main__":
@@ -83,24 +101,9 @@ if __name__ == "__main__":
     assert 2 / 3 == ap_at_k(actual, predicted, k=3)
 
     # NDCG
-
     predictions = [0.1, 0.13, 0.35, 0.75]
-    target = predictions.copy()
-    target.sort(reverse=True)
 
     ndcg_np = ndcg(predictions)
+    ndcg_pytorch = ndcg_torch(predictions)
 
-    # NDCG torch
-    if torch.cuda.is_available():
-        device = "cuda"
-    else:
-        device = "cpu"
-
-    predictions = torch.tensor(predictions).to(device)
-    target = torch.tensor(target).to(device)
-
-    ndcg_torch = retrieval_normalized_dcg(predictions, target)
-
-    print(ndcg_torch, ndcg_np)
-
-    assert ndcg_torch == ndcg_np
+    assert abs(ndcg_pytorch - ndcg_np) < 0.00001

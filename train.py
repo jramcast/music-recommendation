@@ -27,6 +27,8 @@ def train(
 def train_one_epoch(
     model: nn.Module, loader: DataLoader, loss_fn, optimiser, device: str
 ):
+    loss = None
+
     for inputs, targets in loader:
         print("input", inputs.shape)
         # Send data to GPU if available
@@ -42,7 +44,8 @@ def train_one_epoch(
         loss.backward()  # run backprop
         optimiser.step()  # update the weights
 
-    print("loss:", loss.item())
+    if loss:
+        print("loss:", loss.item())
 
 
 if __name__ == "__main__":
