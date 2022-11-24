@@ -140,8 +140,9 @@ class FourQDataset(Dataset):
 
 
 if __name__ == "__main__":
-    AUDIO_DIR = Path("data/4q/audio/").absolute()
-    ANNOTATIONS_FILE = "data/4q/audio/panda_dataset_taffc_annotations.csv"
+    # AUDIO_DIR = Path("data/4q/audio/").absolute()
+    AUDIO_DIR = Path(__file__).parent.joinpath("../../../data/4q/audio/").absolute()
+    ANNOTATIONS_FILE = AUDIO_DIR.joinpath("panda_dataset_taffc_annotations.csv")
     SAMPLE_RATE = 22050
     SAMPLE_SECONDS = 30
     NUM_SAMPLES = SAMPLE_SECONDS * SAMPLE_RATE

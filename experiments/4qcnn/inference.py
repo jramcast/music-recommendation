@@ -6,7 +6,6 @@ import torchaudio
 from datasets.fourq import FourQDataset
 
 
-
 def predict(model: nn.Module, input: torch.Tensor, target_index: int):
     model.eval()
     with torch.no_grad():
@@ -25,7 +24,7 @@ if __name__ == "__main__":
     model.load_state_dict(model_weights)
 
     # Load dataset
-    AUDIO_DIR = Path("data/4q/audio/").absolute()
+    AUDIO_DIR = Path(__file__).parent.joinpath("../../data/4q/audio/").absolute()
     ANNOTATIONS_FILE = AUDIO_DIR.joinpath("panda_dataset_taffc_annotations.csv")
     SAMPLE_RATE = 22050
     SAMPLE_SECONDS = 30

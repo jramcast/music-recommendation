@@ -79,10 +79,11 @@ def ndcg_torch(predictions: List):
         device = "cuda"
     else:
         device = "cpu"
-    predictions = torch.tensor(predictions).to(device)
-    target = torch.tensor(target).to(device)
 
-    return retrieval_normalized_dcg(predictions, target)
+    predictions_tensor = torch.tensor(predictions).to(device)
+    target_tensor = torch.tensor(target).to(device)
+
+    return retrieval_normalized_dcg(predictions_tensor, target_tensor)
 
 
 if __name__ == "__main__":
