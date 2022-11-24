@@ -49,11 +49,7 @@ def get_lastfm_tag_probs_for_current_hour(lastfm_tag_probs):
 def predict_spotify_features(model_path: Path, input_tags):
     # Load the pretrained model to predict Spotify features
     model = xgb.XGBRegressor()
-    model.load_model(
-        Path(__file__).parent.joinpath(
-            "models/lastfm-tags_to_spotify-features-xgboost.json"
-        )
-    )
+    model.load_model(model_path)
 
     prediction = model.predict(input_tags)
     return prediction
@@ -111,9 +107,9 @@ def find_closest_tracks_to_spotify_features(danceability):
 
 
 if __name__ == "__main__":
-    DATA_DIR = Path(__file__).parent.joinpath("../../data/jaime_lastfm")
+    DATA_DIR = Path(__file__).parent.joinpath("../../../data/jaime_lastfm")
     MODEL_PATH = Path(__file__).parent.joinpath(
-        "models/lastfm-tags_to_spotify-features-xgboost.json"
+        "../_models/lastfm-tags_to_spotify-features-xgboost.json"
     )
 
     lastfm_tag_probs = load_lastfm_tag_probs_by_hour(DATA_DIR)
