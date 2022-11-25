@@ -93,7 +93,9 @@ if __name__ == "__main__":
         "_models/lastfm-tags_to_spotify-features-xgboost.json"
     )
 
-    lastfm_tag_probs = dataloading.lastfm.load_tag_probs_by_hour(DATA_DIR)
+    lastfm_tag_probs = dataloading.lastfm.load_tag_probs_by_hour(
+        DATA_DIR, parse_timestamp=True
+    )
     hour, lastfm_tag_probs = get_lastfm_tag_probs_for_current_hour(lastfm_tag_probs)
     print("🎶 PHASE 1: Generating Last.fm input tag scores for current time 🎶")
     print("  - Current hour is:", hour)
