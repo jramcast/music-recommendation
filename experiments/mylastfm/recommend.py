@@ -2,39 +2,20 @@
 Run the recommendations pipeline
 """
 
-import re
 from pathlib import Path
 from pprint import pprint
 from datetime import datetime
 
-import pandas as pd
 import xgboost as xgb
 from pymongo import MongoClient
 
-
-def load_lastfm_tag_probs_by_hour(DATA_DIR):
-    tagprobs = pd.read_csv(
-        DATA_DIR.joinpath("tag_probs_by_hour.csv"),
-        index_col="timestamp",
-        parse_dates=["timestamp"],
-    )
-
-    # Normalize tag names to avoid problems with xgboost
-    # (it has problems with [ or ] or <)
-    regex = re.compile(r"\[|\]|<", re.IGNORECASE)
-    tagprobs.columns = [
-        regex.sub("_", col) if any(x in str(col) for x in set(("[", "]", "<"))) else col
-        for col in tagprobs.columns.values
-    ]  # type: ignore
-
-    return tagprobs
-
-
-def get_hour_from_datetime(moment: datetime):
-    return moment.hour
+import dataloading.lastfm
 
 
 def get_lastfm_tag_probs_for_current_hour(lastfm_tag_probs):
+    def get_hour_from_datetime(moment: datetime):
+        return moment.hour
+
     # Get input last fm tags for the current hour of the day
     lastfm_tag_probs["hour"] = lastfm_tag_probs.index.map(get_hour_from_datetime)
     tagprobs_aggregate_by_hour = lastfm_tag_probs.groupby(["hour"]).mean()
@@ -107,17 +88,15 @@ def find_closest_tracks_to_spotify_features(danceability):
 
 
 if __name__ == "__main__":
-    DATA_DIR = Path(__file__).parent.joinpath("../../../data/jaime_lastfm")
+    DATA_DIR = Path(__file__).parent.joinpath("../..//data/jaime_lastfm")
     MODEL_PATH = Path(__file__).parent.joinpath(
-        "../_models/lastfm-tags_to_spotify-features-xgboost.json"
+        "_models/lastfm-tags_to_spotify-features-xgboost.json"
     )
 
-    lastfm_tag_probs = load_lastfm_tag_probs_by_hour(DATA_DIR)
-    current_hour, lastfm_tag_probs = get_lastfm_tag_probs_for_current_hour(
-        lastfm_tag_probs
-    )
+    lastfm_tag_probs = dataloading.lastfm.load_tag_probs_by_hour(DATA_DIR)
+    hour, lastfm_tag_probs = get_lastfm_tag_probs_for_current_hour(lastfm_tag_probs)
     print("🎶 PHASE 1: Generating Last.fm input tag scores for current time 🎶")
-    print("  - Current hour is:", current_hour)
+    print("  - Current hour is:", hour)
     print(
         "  - The following values are an average of the "
         "strength of each tag for the current hour:\n"
