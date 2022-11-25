@@ -25,4 +25,3 @@ class Track:
 
     def __repr__(self) -> str:
         return f"{self.artist.name} - '{self.name}' at '{self.playback_utc_date}'"
-
