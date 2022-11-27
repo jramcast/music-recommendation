@@ -34,3 +34,6 @@ if __name__ == "__main__":
     print("Dataframe saved to: ", CSV_FILEPATH)
 
     # TODO: generate spotify CSV...
+
+
+    # TODO: tokenize tags

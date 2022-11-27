@@ -8,6 +8,9 @@ from typing import Dict, Tuple, Iterable, List
 
 import pandas as pd
 from pymongo import MongoClient
+from tokenizers import Tokenizer, Encoding
+from transformers import AutoTokenizer
+
 
 from dataloading.raw.entities.track import Track
 from dataloading.raw.lastfm import MongoDBTrackPlaysRepository
@@ -179,3 +182,55 @@ def create_moments_to_tags_relevance_df(tagnames, moments_to_tag_relevances_mapp
     df = pd.DataFrame(columns)
 
     return df
+
+
+def convert_tag_weight_tuples_to_str(tags_and_weights: List[Tuple[str, str]]):
+    """
+    [(rock, 34), (metal, 88)] ----> "rock: 34 metal 88"
+    """
+    as_strings = []
+    for tag, weight in tags_and_weights:
+        as_strings.append(f"{tag.strip()}: {weight}")
+
+    return "; ".join(as_strings)
+
+
+def get_tokens_by_moment(time_precision="hours"):
+
+    """
+    Generates a CSV file of tokenized Last.fm tags by moment
+
+    Help: https://huggingface.co/docs/transformers/preprocessing
+    """
+    trackplays = get_all_lastfm_track_plays()
+
+    moment_to_tags_mapping = map_moments_to_tags(trackplays, time_precision)
+
+    moment_to_tags_string_mapping = {
+        moment: convert_tag_weight_tuples_to_str(moment_to_tags_mapping[moment])
+        for moment in moment_to_tags_mapping
+    }
+
+    batch_sentences = list(moment_to_tags_string_mapping.values())[:10]
+
+    tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+    encoded_sentences = tokenizer(batch_sentences, padding=True)
+    return tokenizer, encoded_sentences
+
+
+def get_tags_from_tokens(tokenizer: Tokenizer, encoding: Dict):
+
+    """
+    Generates a CSV file of tokenized Last.fm tags by moment
+    """
+
+    return tokenizer.decode(encoding["input_ids"])
+
+
+if __name__ == "__main__":
+
+    tokenizer, encoding = get_tokens_by_moment()
+
+    print(tokenizer.decode(encoding["input_ids"][0]))
+
+    # print(get_tags_from_tokens(tokenizer, encoding))
