@@ -4,12 +4,12 @@ Last.fm data preprocessing before training.
 This scripts reads the raw Last.fm from a MongoDB and creates a CSV
 """
 
+from pathlib import Path
 from typing import Dict, Tuple, Iterable, List
 
 import pandas as pd
 from pymongo import MongoClient
 from tokenizers import Tokenizer, Encoding
-from transformers import AutoTokenizer
 
 
 from dataloading.raw.entities.track import Track
@@ -184,18 +184,9 @@ def create_moments_to_tags_relevance_df(tagnames, moments_to_tag_relevances_mapp
     return df
 
 
-def convert_tag_weight_tuples_to_str(tags_and_weights: List[Tuple[str, str]]):
-    """
-    [(rock, 34), (metal, 88)] ----> "rock: 34 metal 88"
-    """
-    as_strings = []
-    for tag, weight in tags_and_weights:
-        as_strings.append(f"{tag.strip()}: {weight}")
-
-    return "; ".join(as_strings)
-
-
-def get_tokens_by_moment(time_precision="hours"):
+def create_tag_tokens_by_moment_csv(
+    csv_filename: Path, tokenizer: Tokenizer, time_precision="hours"
+):
 
     """
     Generates a CSV file of tokenized Last.fm tags by moment
@@ -206,31 +197,60 @@ def get_tokens_by_moment(time_precision="hours"):
 
     moment_to_tags_mapping = map_moments_to_tags(trackplays, time_precision)
 
+    # Each moment maps to a str
     moment_to_tags_string_mapping = {
         moment: convert_tag_weight_tuples_to_str(moment_to_tags_mapping[moment])
         for moment in moment_to_tags_mapping
     }
 
-    batch_sentences = list(moment_to_tags_string_mapping.values())[:10]
+    moment_to_token_ids_mapping = convert_moment_tag_strings_to_tokens(
+        moment_to_tags_string_mapping, tokenizer
+    )
 
-    tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
-    encoded_sentences = tokenizer(batch_sentences, padding=True)
-    return tokenizer, encoded_sentences
+    # Orient="index" to use dict keys as rows
+    df = pd.DataFrame.from_dict(moment_to_token_ids_mapping, orient="index")
+    df.index.rename("timestamp", inplace=True)
+
+    df.to_csv(csv_filename, index=True)
+
+    return df
 
 
-def get_tags_from_tokens(tokenizer: Tokenizer, encoding: Dict):
+def convert_moment_tag_strings_to_tokens(
+    moment_to_string_mapping: Dict[str, str], tokenizer: Tokenizer
+):
+    moment_to_token_ids_mapping: Dict[str, List[int]] = {}
+
+    for moment in moment_to_string_mapping:
+        text = moment_to_string_mapping[moment]
+        encoding: Encoding = tokenizer.encode(text)
+        moment_to_token_ids_mapping[moment] = encoding.ids
+
+    return moment_to_token_ids_mapping
+
+
+def create_tokenizer():
+    tokenizer: Tokenizer = Tokenizer.from_pretrained("bert-base-uncased")
+    max_length = 10000
+    tokenizer.enable_truncation(max_length=max_length)
+    tokenizer.enable_padding(length=max_length)
+    return tokenizer
+
+
+def convert_tag_weight_tuples_to_str(tags_and_weights: List[Tuple[str, str]]):
+    """
+    [(rock, 34), (metal, 88)] ----> "'rock' 34, 'metal' 88"
+    """
+    as_strings = []
+    for tag, weight in tags_and_weights:
+        as_strings.append(f"'{tag.strip()}' {weight}")
+
+    return ", ".join(as_strings)
+
+
+def get_tags_from_token_ids(tokenizer: Tokenizer, ids: List[int]):
 
     """
     Generates a CSV file of tokenized Last.fm tags by moment
     """
-
-    return tokenizer.decode(encoding["input_ids"])
-
-
-if __name__ == "__main__":
-
-    tokenizer, encoding = get_tokens_by_moment()
-
-    print(tokenizer.decode(encoding["input_ids"][0]))
-
-    # print(get_tags_from_tokens(tokenizer, encoding))
+    return tokenizer.decode(ids)

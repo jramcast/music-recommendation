@@ -19,3 +19,16 @@ def load_tag_probs_by_hour(datadir: Path, parse_timestamp=False):
     clean_column_names(tagprobs)
 
     return tagprobs
+
+
+def load_tag_tokens_by_hour(datadir: Path, parse_timestamp=False):
+    """
+    Load the precomputed Last.fm tag probabilites (or weights) by hour
+    """
+    tokens = pd.read_csv(
+        datadir.joinpath("tag_tokens_by_hours.csv"),
+        index_col="timestamp",
+        parse_dates=["timestamp"] if parse_timestamp else False,
+    )
+
+    return tokens
