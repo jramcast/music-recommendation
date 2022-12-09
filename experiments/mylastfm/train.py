@@ -107,7 +107,7 @@ def train_with_tag_probs(
     experiment_metrics = training_metrics.evaluate(experiment, y_validation, y_pred)
     log_metrics(logger, experiment_metrics)
 
-    model.save_model(models_save_dir.joinpath(f"{experiment}.json"))
+    # model.save_model(models_save_dir.joinpath(f"{experiment}.json"))
 
 
 def train_with_tag_tokens(
@@ -135,12 +135,12 @@ def train_with_tag_tokens(
         data_dir, num_tokens, target, time_precision, stringifier_method
     )
 
-    print("Training Set - X size", X_train.shape)
-    print("Training Set - y size", y_train.shape)
+    logger = logging.getLogger(experiment)
+    logger.info(f"Training Set size X: {X_train.shape}")
+    logger.info(f"Training Set size y: {y_train.shape}")
 
     model = training.models.get_model(model_key)
 
-    logger = logging.getLogger(experiment)
     start = time.time()
     logger.info("Start training")
     model.fit(X_train, y_train)
