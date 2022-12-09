@@ -13,7 +13,7 @@ class Track:
     loved: bool
     user_playcount: int
     total_playcount: int
-    playback_utc_date: Optional[datetime]
+    playback_utc_date: datetime
     mbid: Optional[str] = None
     _id: Optional[str] = None
 

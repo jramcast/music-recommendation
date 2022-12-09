@@ -4,12 +4,14 @@ import pandas as pd
 from preprocessing import clean_column_names
 
 
-def load_tag_probs_by_hour(datadir: Path, parse_timestamp=False):
+def read_csv_tag_probs(
+    datadir: Path, num_tags: int, time_precision: str, parse_timestamp=False
+):
     """
     Load the precomputed Last.fm tag probabilites (or weights) by hour
     """
     tagprobs = pd.read_csv(
-        datadir.joinpath("tag_probs_by_hour.csv"),
+        datadir.joinpath(f"lastfm_{num_tags}_tag_probs_by_{time_precision}.csv"),
         index_col="timestamp",
         parse_dates=["timestamp"] if parse_timestamp else False,
     )
@@ -21,12 +23,20 @@ def load_tag_probs_by_hour(datadir: Path, parse_timestamp=False):
     return tagprobs
 
 
-def load_tag_tokens_by_hour(datadir: Path, parse_timestamp=False):
+def read_csv_tag_tokens(
+    datadir: Path,
+    num_tokens: int,
+    time_precision: str,
+    stringifier_method: str,
+    parse_timestamp=False,
+):
     """
     Load the precomputed Last.fm tag probabilites (or weights) by hour
     """
     tokens = pd.read_csv(
-        datadir.joinpath("tag_tokens_by_hours.csv"),
+        datadir.joinpath(
+            f"lastfm_{num_tokens}_tokens_from_{stringifier_method}_by_{time_precision}.csv"
+        ),
         index_col="timestamp",
         parse_dates=["timestamp"] if parse_timestamp else False,
     )

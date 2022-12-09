@@ -1,111 +1,168 @@
 import os
+import time
 from pathlib import Path
 
+import logging
+from typing import Dict, List
 import pandas as pd
-import xgboost as xgb
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
+
+import evaluation
+import training.models
+import dataloading
 
 
-import dataloading.lastfm
-import dataloading.spotify
+training_metrics = evaluation.TrainingMetrics(Path(__file__).parent.joinpath("results.csv"))
 
 
-def print_evaluation_metrics(y_test, y_pred):
-    print(" Mean squared error: %.2f" % mean_squared_error(y_test, y_pred))
-    print(
-        " Root Mean squared error: %.2f"
-        % mean_squared_error(y_test, y_pred, squared=False)
+def main():
+    DATA_DIR = Path(__file__).parent.joinpath("../../data/jaime_lastfm")
+    MODELS_SAVE_DIR = Path(__file__).parent.joinpath("_models")
+    # TODO: Use more features
+    # acousticness,danceability,duration_ms,energy,instrumentalness,key,liveness,loudness,mode,speechiness,tempo,valence
+    TARGET_FEATURES = [
+        "danceability",
+        "acousticness",
+        "energy",
+        "instrumentalness",
+        "valence",
+    ]
+    MODELS = ["baseline"]
+    TIME_PRECISIONS = ["hours"]
+
+    configure_logging()
+
+    if os.environ.get("TRAIN_PROBS", True):
+        NUM_TAGS = [100, 1000, 10000, 20000]
+
+        for num_tokens in NUM_TAGS:
+            for time_precision in TIME_PRECISIONS:
+                for target in TARGET_FEATURES:
+                    for model in MODELS:
+                        train_with_tag_probs(
+                            target,
+                            model,
+                            num_tokens,
+                            time_precision,
+                            MODELS_SAVE_DIR,
+                            DATA_DIR,
+                        )
+
+    if os.environ.get("TRAIN_TOKENS", True):
+        NUM_TOKENS = [100, 1000, 10000, 20000]
+        STRING_METHODS = ["tag_weight", "repeat_tags"]
+
+        for num_tokens in NUM_TOKENS:
+            for time_precision in TIME_PRECISIONS:
+                for stringifier_method in STRING_METHODS:
+                    for target in TARGET_FEATURES:
+                        for model in MODELS:
+                            train_with_tag_tokens(
+                                target,
+                                model,
+                                num_tokens,
+                                time_precision,
+                                stringifier_method,
+                                MODELS_SAVE_DIR,
+                                DATA_DIR,
+                            )
+
+
+def train_with_tag_probs(
+    target: str,
+    model_key: str,
+    num_tags: int,
+    time_precision: str,
+    models_save_dir: Path,
+    data_dir: Path,
+):
+    experiment = f"{target}-{model_key}-{num_tags}_probs-by_{time_precision}"
+
+    logger = logging.getLogger(experiment)
+
+    (
+        X_train,
+        y_train,
+        X_validation,
+        y_validation,
+        _,
+        _,
+    ) = dataloading.read_tag_probs_sets(data_dir, num_tags, target, time_precision)
+
+    logger.info(f"Training Set size X: {X_train.shape}")
+    logger.info(f"Training Set size y: {y_train.shape}")
+
+    model = training.models.get_model(model_key)
+
+    start = time.time()
+    logger.info("Start training")
+    model.fit(X_train, y_train)
+    logger.info(f"Training time: {time.time() - start} seconds")
+
+    y_pred = model.predict(X_validation)
+    experiment_metrics = training_metrics.evaluate(experiment, y_validation, y_pred)
+    log_metrics(logger, experiment_metrics)
+    models_save_dir.joinpath(f"{experiment}.json")
+
+
+def train_with_tag_tokens(
+    target: str,
+    model_key: str,
+    num_tokens: int,
+    time_precision: str,
+    stringifier_method: str,
+    models_save_dir: Path,
+    data_dir: Path,
+):
+    experiment = f"{target}-{model_key}-{num_tokens}_tokens-by_{time_precision}"
+
+    (
+        X_train,
+        y_train,
+        X_validation,
+        y_validation,
+        _,
+        _,
+    ) = dataloading.read_tag_token_sets(
+        data_dir, num_tokens, target, time_precision, stringifier_method
     )
-    print(" Mean absolute error: %.2f" % mean_absolute_error(y_test, y_pred))
-    # The coefficient of determination: 1 is perfect prediction
-    print(" Coefficient of determination: %.2f" % r2_score(y_test, y_pred))
-
-
-def train_with_tag_probs(target: str, models_dir: Path, data_dir: Path):
-    lastfm_tag_probs = dataloading.lastfm.load_tag_probs_by_hour(data_dir)
-    spotify_features = dataloading.spotify.load_mean_feature_values_by_hour(data_dir)
-
-    dataset = pd.merge(
-        lastfm_tag_probs, spotify_features, left_index=True, right_index=True
-    )
-
-    # Only predict one FEATURE for now
-    X = dataset.iloc[:, :1000]
-    y = dataset[target]
-
-    X_train: pd.DataFrame
-    X_test: pd.DataFrame
-    y_train: pd.DataFrame
-    y_test: pd.DataFrame
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.33, random_state=1983
-    )  # type: ignore (train_test_split actually returns a dataframe)
 
     print("Training Set - X size", X_train.shape)
     print("Training Set - y size", y_train.shape)
 
-    model = xgb.XGBRegressor(n_estimators=200)
+    model = training.models.get_model(model_key)
+
+    logger = logging.getLogger(experiment)
+    start = time.time()
+    logger.info("Start training")
     model.fit(X_train, y_train)
+    logger.info(f"Training time: {time.time() - start} seconds")
 
-    # Make predictions using the testing set
-    y_pred = model.predict(X_test)
+    y_pred = model.predict(X_validation)
+    experiment_metrics = training_metrics.evaluate(experiment, y_validation, y_pred)
+    log_metrics(logger, experiment_metrics)
+    models_save_dir.joinpath(f"{experiment}.json")
 
-    print_evaluation_metrics(y_test, y_pred)
 
-    model.save_model(
-        models_dir.joinpath("lastfm-tags_to_spotify-features-xgboost.json")
+def configure_logging():
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        handlers=[
+            logging.FileHandler(Path(__file__).parent.joinpath("results.log")),
+            logging.StreamHandler(),
+        ],
     )
 
 
-def train_with_tag_tokens(target: str, models_dir: Path, data_dir: Path):
-    lastfm_tag_tokens = dataloading.lastfm.load_tag_tokens_by_hour(data_dir)
-    spotify_features = dataloading.spotify.load_mean_feature_values_by_hour(data_dir)
 
-    dataset = pd.merge(
-        lastfm_tag_tokens, spotify_features, left_index=True, right_index=True
-    )
-
-    # Only predict one FEATURE for now
-    X = dataset.iloc[:, :10000]
-    y = dataset[target]
-
-    X_train: pd.DataFrame
-    X_test: pd.DataFrame
-    y_train: pd.DataFrame
-    y_test: pd.DataFrame
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.33, random_state=1983
-    )  # type: ignore (train_test_split actually returns a dataframe)
-
-    print("Training Set - X size", X_train.shape)
-    print("Training Set - y size", y_train.shape)
-
-    model = xgb.XGBRegressor(n_estimators=200)
-    model.fit(X_train, y_train)
-
-    # Make predictions using the testing set
-    y_pred = model.predict(X_test)
-
-    print_evaluation_metrics(y_test, y_pred)
-
-    model.save_model(
-        models_dir.joinpath("lastfm-tag_tokens_to_spotify-features-xgboost.json")
-    )
+def log_metrics(logger: logging.Logger, metrics: Dict):
+    logger.info("Mean squared error: %.2f" % metrics["mse"])
+    logger.info("Root Mean squared error: %.2f" % metrics["rmse"])
+    logger.info("Mean absolute error: %.2f" % metrics["mae"])
+    logger.info("Coefficient of determination: %.2f" % metrics["r2"])
 
 
 if __name__ == "__main__":
-    # TODO: Use more features
-    # acousticness,danceability,duration_ms,energy,instrumentalness,key,liveness,loudness,mode,speechiness,tempo,valence
-    TARGET_FEATURE = "danceability"
-
-    MODELS_DIR = Path(__file__).parent.joinpath("_models")
-    DATA_DIR = Path(__file__).parent.joinpath("../../data/jaime_lastfm")
-
-    if os.environ.get("TRAIN_PROBS"):
-        train_with_tag_probs(TARGET_FEATURE, MODELS_DIR, DATA_DIR)
-
-    # Default option
-    if os.environ.get("TRAIN_TOKENS", True):
-        print("Training with tag tokens...")
-        train_with_tag_tokens(TARGET_FEATURE, MODELS_DIR, DATA_DIR)
+    main()

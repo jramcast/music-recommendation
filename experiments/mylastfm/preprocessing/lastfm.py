@@ -5,7 +5,7 @@ This scripts reads the raw Last.fm from a MongoDB and creates a CSV
 """
 
 from pathlib import Path
-from typing import Dict, Tuple, Iterable, List
+from typing import Callable, Dict, Tuple, Iterable, List
 
 import pandas as pd
 from pymongo import MongoClient
@@ -184,8 +184,15 @@ def create_moments_to_tags_relevance_df(tagnames, moments_to_tag_relevances_mapp
     return df
 
 
+# A function that represents tags|weights as a string
+Stringifier = Callable[[List[Tuple[str, str]]], str]
+
+
 def create_tag_tokens_by_moment_csv(
-    csv_filename: Path, tokenizer: Tokenizer, time_precision="hours"
+    csv_filename: Path,
+    tokenizer: Tokenizer,
+    stringifier: Stringifier,
+    time_precision="hours",
 ):
 
     """
@@ -199,7 +206,7 @@ def create_tag_tokens_by_moment_csv(
 
     # Each moment maps to a str
     moment_to_tags_string_mapping = {
-        moment: convert_tag_weight_tuples_to_str(moment_to_tags_mapping[moment])
+        moment: stringifier(moment_to_tags_mapping[moment])
         for moment in moment_to_tags_mapping
     }
 
@@ -229,21 +236,32 @@ def convert_moment_tag_strings_to_tokens(
     return moment_to_token_ids_mapping
 
 
-def create_tokenizer():
+def init_tokenizer(token_limit: int):
     tokenizer: Tokenizer = Tokenizer.from_pretrained("bert-base-uncased")
-    max_length = 10000
+    max_length = token_limit
     tokenizer.enable_truncation(max_length=max_length)
     tokenizer.enable_padding(length=max_length)
     return tokenizer
 
 
-def convert_tag_weight_tuples_to_str(tags_and_weights: List[Tuple[str, str]]):
+def tag_stringifier_include_weight(tags_and_weights: List[Tuple[str, str]]):
     """
     [(rock, 34), (metal, 88)] ----> "'rock' 34, 'metal' 88"
     """
     as_strings = []
     for tag, weight in tags_and_weights:
         as_strings.append(f"'{tag.strip()}' {weight}")
+
+    return ", ".join(as_strings)
+
+
+def tag_stringifier_repeat_tag(tags_and_weights: List[Tuple[str, str]]):
+    """
+    [(rock, 2), (metal, 4)] ----> "'rock rock metal metal metal metal"
+    """
+    as_strings = []
+    for tag, weight in tags_and_weights:
+        as_strings.append(tag.strip() * int(weight))
 
     return ", ".join(as_strings)
 
