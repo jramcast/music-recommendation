@@ -82,7 +82,7 @@ def _split_in_training_validation_and_test(
     target_column: str,
 ):
     X = dataframe.iloc[:, :num_X_columns]
-    y = dataframe[target_column:str]
+    y = dataframe[target_column]
 
     X_train: pd.DataFrame
     X_validation: pd.DataFrame

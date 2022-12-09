@@ -1,3 +1,4 @@
+from typing import Dict
 import numpy as np
 import xgboost as xgb
 from pandas import DataFrame
@@ -5,11 +6,11 @@ from sklearn import linear_model
 from sklearn.linear_model._base import LinearModel
 
 
-def get_model(key: str) -> LinearModel:
-    models = {
+def get_model(key: str):
+    models: Dict[str, LinearModel] = {
         "xdg": xbg_regressor(),
-        "bayesian": bayesian_ridge(),
-        "baseline": baseline(),
+        "bayes": bayesian_ridge(),
+        "baseline": baseline()
     }
 
     return models[key]

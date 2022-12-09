@@ -1,4 +1,3 @@
-import logging
 from pathlib import Path
 from typing import Dict
 
@@ -19,16 +18,18 @@ class TrainingMetrics:
         self.csv_path = csv_path
 
     def evaluate(self, experiment_name: str, y_test, y_pred):
+        metrics = calculate_metrics(y_test, y_pred)
         self.results[experiment_name] = calculate_metrics(y_test, y_pred).values()
         self.to_csv()
 
-        return self.results[experiment_name]
+        return metrics
 
     def to_csv(self):
         df = pd.DataFrame.from_dict(
             self.results, orient="index", columns=["mse", "rmse", "mae", "r2"]
         )
-        df.to_csv()
+        df.index.rename("experiment", inplace=True)
+        df.to_csv(self.csv_path, index=True)
 
 
 def calculate_metrics(y_test, y_pred):
@@ -39,4 +40,3 @@ def calculate_metrics(y_test, y_pred):
         # The coefficient of determination: 1 is perfect prediction
         "r2": r2_score(y_test, y_pred),
     }
-

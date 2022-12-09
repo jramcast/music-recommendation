@@ -27,13 +27,17 @@ def main():
         "instrumentalness",
         "valence",
     ]
-    MODELS = ["baseline"]
+    MODELS = [
+        "xdg",
+        "bayes",
+        "baseline"
+    ]
     TIME_PRECISIONS = ["hours"]
 
     configure_logging()
 
     if os.environ.get("TRAIN_PROBS", True):
-        NUM_TAGS = [100, 1000, 10000, 20000]
+        NUM_TAGS = [100, 1000, 10000]
 
         for num_tokens in NUM_TAGS:
             for time_precision in TIME_PRECISIONS:
@@ -49,7 +53,7 @@ def main():
                         )
 
     if os.environ.get("TRAIN_TOKENS", True):
-        NUM_TOKENS = [100, 1000, 10000, 20000]
+        NUM_TOKENS = [100, 1000, 10000]
         STRING_METHODS = ["tag_weight", "repeat_tags"]
 
         for num_tokens in NUM_TOKENS:
@@ -102,7 +106,8 @@ def train_with_tag_probs(
     y_pred = model.predict(X_validation)
     experiment_metrics = training_metrics.evaluate(experiment, y_validation, y_pred)
     log_metrics(logger, experiment_metrics)
-    models_save_dir.joinpath(f"{experiment}.json")
+
+    model.save_model(models_save_dir.joinpath(f"{experiment}.json"))
 
 
 def train_with_tag_tokens(
@@ -114,7 +119,10 @@ def train_with_tag_tokens(
     models_save_dir: Path,
     data_dir: Path,
 ):
-    experiment = f"{target}-{model_key}-{num_tokens}_tokens-by_{time_precision}"
+    experiment = (
+        f"{target}-{model_key}-{num_tokens}_tokens-"
+        f"from_{stringifier_method}-by_{time_precision}"
+    )
 
     (
         X_train,
@@ -154,7 +162,6 @@ def configure_logging():
             logging.StreamHandler(),
         ],
     )
-
 
 
 def log_metrics(logger: logging.Logger, metrics: Dict):
