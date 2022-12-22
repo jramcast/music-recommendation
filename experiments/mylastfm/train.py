@@ -3,16 +3,16 @@ import time
 from pathlib import Path
 
 import logging
-from typing import Dict, List
-import pandas as pd
-from sklearn.model_selection import train_test_split
+from typing import Dict
 
 import evaluation
 import training.models
 import dataloading
 
 
-training_metrics = evaluation.TrainingMetrics(Path(__file__).parent.joinpath("results.csv"))
+training_metrics = evaluation.TrainingMetrics(
+    Path(__file__).parent.joinpath("results.csv")
+)
 
 
 def main():
