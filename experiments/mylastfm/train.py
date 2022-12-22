@@ -107,7 +107,7 @@ def train_with_tag_probs(
     experiment_metrics = training_metrics.evaluate(experiment, y_validation, y_pred)
     log_metrics(logger, experiment_metrics)
 
-    # model.save_model(models_save_dir.joinpath(f"{experiment}.json"))
+    model.save(models_save_dir.joinpath(f"{experiment}.json"))
 
 
 def train_with_tag_tokens(
