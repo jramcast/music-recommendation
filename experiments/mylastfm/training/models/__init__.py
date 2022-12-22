@@ -1,8 +1,5 @@
 from typing import Dict
 
-import xgboost as xgb
-from sklearn import linear_model
-
 from .interface import Model
 from .baseline import BaselineModel
 from .xgb import XGBoostRegressor
