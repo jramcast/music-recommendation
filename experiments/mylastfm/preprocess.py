@@ -20,7 +20,7 @@ def main():
     TIME_PRECISION = os.environ.get("TIME_PRECISION", "hours")
     TAG_LIMITS = [100, 1000, 10000, 20000]
     TOKEN_LIMITS = [100, 1000, 10000, 20000]
-    STRINGIFY_METHODS = ["tag_weight", "repeat_tags"]
+    STRINGIFY_METHODS = ["tag_weight_str", "repeat_tags_str"]
 
     if os.environ.get("LASTFM_AS_TOKENS", False):
         for limit in TOKEN_LIMITS:
@@ -34,7 +34,11 @@ def main():
     if os.environ.get("SPOTIFY_FEATURES", False):
         generate_spotify_features_csv(TIME_PRECISION)
 
-    if os.environ.get("MERGE", True):
+    if os.environ.get("TEXTS", True):
+        for method in STRINGIFY_METHODS:
+            generate_texts_csv(TIME_PRECISION, method)
+
+    if os.environ.get("MERGE", False):
         merge_lastfm_and_spotify_csvs(
             TIME_PRECISION, TAG_LIMITS, TOKEN_LIMITS, STRINGIFY_METHODS
         )
@@ -103,6 +107,38 @@ def generate_tokenized_tags_csv(
     print("Data frame shape", tokens_by_moment.shape)
     print("Example")
     print(tokens_by_moment.head())
+    print("Dataframe saved to: ", TOKENS_CSV_FILEPATH)
+
+
+def generate_texts_csv(time_precision: str, stringifier_key: str):
+    """
+    Generate a csv of texts, concatenating tags
+    """
+
+    stringifiers = {
+        "tag_weight_str": preprocessing.lastfm.tag_stringifier_include_weight,
+        "repeat_tags_str": preprocessing.lastfm.tag_stringifier_repeat_tag,
+    }
+
+    stringifier = stringifiers[stringifier_key]
+
+    with Halo(text="Generating dataframe of Last.fm concatenated tags by moment"):
+        TOKENS_CSV_FILEPATH = Path(__file__).parent.joinpath(
+            f"../../data/jaime_lastfm/lastfm_text_from_"
+            f"{stringifier_key}_by_{time_precision}.csv"
+        )
+
+        texts_by_moment = preprocessing.lastfm.create_texts_by_moment_csv(
+            TOKENS_CSV_FILEPATH, stringifier, time_precision
+        )
+
+    print("")
+    print(
+        f"Last.fm TEXTS CSV generated for time precision {time_precision} "
+    )
+    print("Data frame shape", texts_by_moment.shape)
+    print("Example")
+    print(texts_by_moment.head())
     print("Dataframe saved to: ", TOKENS_CSV_FILEPATH)
 
 

@@ -15,6 +15,74 @@ from tokenizers import Tokenizer, Encoding
 from dataloading.raw.entities.track import Track
 from dataloading.raw.lastfm import MongoDBTrackPlaysRepository
 
+# A function that represents tags|weights as a string
+Stringifier = Callable[[List[Tuple[str, str]]], str]
+
+
+def create_tag_tokens_by_moment_csv(
+    csv_filename: Path,
+    tokenizer: Tokenizer,
+    stringifier: Stringifier,
+    time_precision="hours",
+):
+
+    """
+    Generates a CSV file of tokenized Last.fm tags by moment
+
+    Help: https://huggingface.co/docs/transformers/preprocessing
+    """
+    trackplays = get_all_lastfm_track_plays()
+
+    moment_to_tags_mapping = map_moments_to_tags(trackplays, time_precision)
+
+    # Each moment maps to a str
+    moment_to_tags_string_mapping = {
+        moment: stringifier(moment_to_tags_mapping[moment])
+        for moment in moment_to_tags_mapping
+    }
+
+    moment_to_token_ids_mapping = convert_moment_tag_strings_to_tokens(
+        moment_to_tags_string_mapping, tokenizer
+    )
+
+    # Orient="index" to use dict keys as rows
+    df = pd.DataFrame.from_dict(moment_to_token_ids_mapping, orient="index")
+    df.index.rename("timestamp", inplace=True)
+
+    df.to_csv(csv_filename, index=True)
+
+    return df
+
+
+def create_texts_by_moment_csv(
+    csv_filename: Path,
+    stringifier: Stringifier,
+    time_precision="hours",
+):
+
+    """
+    Generates a CSV file of concatenated Last.fm tags by moment
+
+    Help: https://huggingface.co/docs/transformers/preprocessing
+    """
+    trackplays = get_all_lastfm_track_plays()
+
+    moment_to_tags_mapping = map_moments_to_tags(trackplays, time_precision)
+
+    # Each moment maps to a str
+    moment_to_tags_string_mapping = {
+        moment: stringifier(moment_to_tags_mapping[moment])
+        for moment in moment_to_tags_mapping
+    }
+
+    # Orient="index" to use dict keys as rows
+    df = pd.DataFrame.from_dict(moment_to_tags_string_mapping, orient="index")
+    df.index.rename("timestamp", inplace=True)
+
+    df.to_csv(csv_filename, index=True)
+
+    return df
+
 
 def create_tag_probs_by_moment_csv(
     csv_filename, time_precision="hours", tags_limit=999999999
@@ -184,43 +252,6 @@ def create_moments_to_tags_relevance_df(tagnames, moments_to_tag_relevances_mapp
     return df
 
 
-# A function that represents tags|weights as a string
-Stringifier = Callable[[List[Tuple[str, str]]], str]
-
-
-def create_tag_tokens_by_moment_csv(
-    csv_filename: Path,
-    tokenizer: Tokenizer,
-    stringifier: Stringifier,
-    time_precision="hours",
-):
-
-    """
-    Generates a CSV file of tokenized Last.fm tags by moment
-
-    Help: https://huggingface.co/docs/transformers/preprocessing
-    """
-    trackplays = get_all_lastfm_track_plays()
-
-    moment_to_tags_mapping = map_moments_to_tags(trackplays, time_precision)
-
-    # Each moment maps to a str
-    moment_to_tags_string_mapping = {
-        moment: stringifier(moment_to_tags_mapping[moment])
-        for moment in moment_to_tags_mapping
-    }
-
-    moment_to_token_ids_mapping = convert_moment_tag_strings_to_tokens(
-        moment_to_tags_string_mapping, tokenizer
-    )
-
-    # Orient="index" to use dict keys as rows
-    df = pd.DataFrame.from_dict(moment_to_token_ids_mapping, orient="index")
-    df.index.rename("timestamp", inplace=True)
-
-    df.to_csv(csv_filename, index=True)
-
-    return df
 
 
 def convert_moment_tag_strings_to_tokens(
@@ -257,11 +288,11 @@ def tag_stringifier_include_weight(tags_and_weights: List[Tuple[str, str]]):
 
 def tag_stringifier_repeat_tag(tags_and_weights: List[Tuple[str, str]]):
     """
-    [(rock, 2), (metal, 4)] ----> "'rock rock metal metal metal metal"
+    [(rock, 2), (metal, 4)] ----> "'rock rock, metal metal metal metal"
     """
     as_strings = []
     for tag, weight in tags_and_weights:
-        as_strings.append(tag.strip() * int(weight))
+        as_strings.append(" ".join([tag.strip()] * int(weight)))
 
     return ", ".join(as_strings)
 
