@@ -34,7 +34,7 @@ def main():
     if os.environ.get("SPOTIFY_FEATURES", False):
         generate_spotify_features_csv(TIME_PRECISION)
 
-    if os.environ.get("TEXTS", True):
+    if os.environ.get("TEXTS", False):
         for method in STRINGIFY_METHODS:
             generate_texts_csv(TIME_PRECISION, method)
 
@@ -133,9 +133,7 @@ def generate_texts_csv(time_precision: str, stringifier_key: str):
         )
 
     print("")
-    print(
-        f"Last.fm TEXTS CSV generated for time precision {time_precision} "
-    )
+    print(f"Last.fm TEXTS CSV generated for time precision {time_precision} ")
     print("Data frame shape", texts_by_moment.shape)
     print("Example")
     print(texts_by_moment.head())
@@ -172,9 +170,27 @@ def merge_lastfm_and_spotify_csvs(
     )
 
     for method in stringify_method:
+
+        text_case_name = f"merged_text_from_{method}_by_{time_precision}"
+
+        with Halo(text_case_name):
+            lastfm_texts = dataloading.lastfm.read_csv_tags_as_text(
+                data_dir, time_precision, method
+            )
+
+            dataset = pd.merge(
+                lastfm_texts,
+                spotify_features,
+                left_index=True,
+                right_index=True,
+            )
+
+            path = data_dir.joinpath(f"{text_case_name}.csv")
+            dataset.to_csv(path, index=True)
+
         for num_tokens in token_limit_cases:
             case_name = (
-                f"merged_{num_tokens}_tokens_from_{method}_str_by_{time_precision}"
+                f"merged_{num_tokens}_tokens_from_{method}_by_{time_precision}"
             )
 
             with Halo(case_name):
@@ -204,7 +220,7 @@ def merge_lastfm_and_spotify_csvs(
                 spotify_features,
                 left_index=True,
                 right_index=True,
-                suffixes=("_x", None)
+                suffixes=("_x", None),
             )
 
             path = data_dir.joinpath(f"{case_name}.csv")

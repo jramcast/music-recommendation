@@ -78,6 +78,7 @@ def create_texts_by_moment_csv(
     # Orient="index" to use dict keys as rows
     df = pd.DataFrame.from_dict(moment_to_tags_string_mapping, orient="index")
     df.index.rename("timestamp", inplace=True)
+    df.rename(columns={0: "text"}, inplace=True)
 
     df.to_csv(csv_filename, index=True)
 
