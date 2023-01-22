@@ -20,5 +20,6 @@ Status:
 - **TODO**: Integrate the transformers model module into the `train.py` script and train with the full dataset.
 - **TODO**: Integrate all results into a single file or directory.
 - **TODO**: Run the transformers training phase in vast.ai.
+- **TODO**: Do not aggregate the data by hour and use every track play as a data row.
 
 
