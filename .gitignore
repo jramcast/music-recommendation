@@ -133,3 +133,11 @@ data/
 
 # IDEs
 .vscode
+
+
+# Transformers binary output
+*experiments/mylastfm/transformer_results/checkpoint-*/optimizer.pt
+*experiments/mylastfm/transformer_results/checkpoint-*/pytorch_model.bin
+*experiments/mylastfm/transformer_results/checkpoint-*/rng_state.pth
+*experiments/mylastfm/transformer_results/checkpoint-*/training_args.bin
+*experiments/mylastfm/transformer_results/checkpoint-*/scheduler.pt

@@ -76,6 +76,45 @@ def read_tag_tokens(
     )
 
 
+def read_text(
+    datadir: Path,
+    time_precision: str,
+    stringifier_method: str,
+    parse_timestamp=False,
+):
+    """
+    Load the precomputed Last.fm tags joined as simple text
+    """
+    return pd.read_csv(
+        datadir.joinpath(
+            f"merged_text_from_{stringifier_method}_str"
+            f"_by_{time_precision}.csv"
+        ),
+        index_col="timestamp",
+        parse_dates=["timestamp"] if parse_timestamp else False,
+    )
+
+
+def read_text_sets(
+    datadir: Path,
+    time_precision: str,
+    stringifier_method: str,
+    target: str,
+    parse_timestamp=False,
+):
+
+    """
+    Returns training validation and test sets for the texts dataset, as:
+
+    X_train, y_train, X_validation, y_validation, X_test, Y_test
+    """
+    dataframe = read_text(
+        datadir, time_precision, stringifier_method, parse_timestamp
+    )
+
+    return _split_in_training_validation_and_test(dataframe, 1, target)
+
+
 def _split_in_training_validation_and_test(
     dataframe: pd.DataFrame,
     num_X_columns: int,
