@@ -17,3 +17,7 @@ class BayesianRegressor(Model):
 
     def save(self, path: os.PathLike):
         joblib.dump(self._model, path)
+
+    def load(self, path: os.PathLike):
+        # TODO
+        pass

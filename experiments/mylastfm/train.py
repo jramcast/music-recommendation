@@ -11,7 +11,7 @@ import dataloading
 
 
 training_metrics = evaluation.TrainingMetrics(
-    Path(__file__).parent.joinpath("results.csv")
+    Path(__file__).parent.joinpath("results_by_track.csv")
 )
 
 
@@ -32,7 +32,7 @@ def main():
         "bayes",
         "baseline"
     ]
-    TIME_PRECISIONS = ["song"]
+    TIME_PRECISIONS = ["track"]
 
     configure_logging()
 
@@ -76,11 +76,11 @@ def train_with_tag_probs(
     target: str,
     model_key: str,
     num_tags: int,
-    time_precision: str,
+    dimension: str,
     models_save_dir: Path,
     data_dir: Path,
 ):
-    experiment = f"{target}-{model_key}-{num_tags}_probs-by_{time_precision}"
+    experiment = f"{target}-{model_key}-{num_tags}_probs-by_{dimension}"
 
     logger = logging.getLogger(experiment)
 
@@ -91,7 +91,9 @@ def train_with_tag_probs(
         y_validation,
         _,
         _,
-    ) = dataloading.read_tag_probs_sets(data_dir, num_tags, target, time_precision)
+    ) = dataloading.read_tag_probs_sets(
+        data_dir, num_tags, target, dimension, index_col=dimension
+    )
 
     logger.info(f"Training Set size X: {X_train.shape}")
     logger.info(f"Training Set size y: {y_train.shape}")
@@ -158,7 +160,7 @@ def configure_logging():
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         handlers=[
-            logging.FileHandler(Path(__file__).parent.joinpath("results_by_song.log")),
+            logging.FileHandler(Path(__file__).parent.joinpath("results_by_track.log")),
             logging.StreamHandler(),
         ],
     )

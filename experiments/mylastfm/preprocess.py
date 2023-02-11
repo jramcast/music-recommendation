@@ -245,7 +245,7 @@ def generate_tabular_tag_probs_and_spotify_features_csv_by_song(tags_limit: int)
     Each different tag is a column
     """
     TAGS_CSV_FILEPATH = Path(__file__).parent.joinpath(
-        f"../../data/jaime_lastfm/merged_{tags_limit}_tag_probs_by_song.csv"
+        f"../../data/jaime_lastfm/merged_{tags_limit}_tag_probs_by_track.csv"
     )
 
     print(
@@ -265,6 +265,7 @@ def generate_tabular_tag_probs_and_spotify_features_csv_by_song(tags_limit: int)
         )
 
         if key in lastfm_tags_by_track:
+            # TODO: fix "energy" column conflict
             data.append(
                 {
                     "track": key,
@@ -272,6 +273,7 @@ def generate_tabular_tag_probs_and_spotify_features_csv_by_song(tags_limit: int)
                     **track_features.get_features_dict(preprocessing.spotify.FEATURES),
                 }
             )
+
     df = pd.DataFrame(data).set_index("track")
     df.to_csv(TAGS_CSV_FILEPATH, index=True)
 

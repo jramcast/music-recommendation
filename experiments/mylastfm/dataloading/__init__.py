@@ -3,36 +3,51 @@ from pathlib import Path
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
+from preprocessing import clean_column_names
+
 
 def read_tag_probs_sets(
     datadir: Path,
     num_tags: int,
     target: str,
-    time_precision: str,
+    dimension: str,
     parse_timestamp=False,
+    index_col="timestamp",
 ):
     """
     Returns training validation and test sets, as:
 
     X_train, y_train, X_validation, y_validation, X_test, Y_test
     """
-    dataframe = read_tag_probs(datadir, num_tags, time_precision, parse_timestamp)
+    dataframe = read_tag_probs(
+        datadir, num_tags, dimension, parse_timestamp, index_col
+    )
 
     return _split_in_training_validation_and_test(dataframe, num_tags, target)
 
 
 def read_tag_probs(
-    datadir: Path, num_tags: int, time_precision: str, parse_timestamp=False
+    datadir: Path,
+    num_tags: int,
+    dimension: str,
+    parse_timestamp=False,
+    index_col="timestamp",
 ):
     """
     Load the precomputed Last.fm tag probabilites (or weights)
     combined with Spotify features
     """
-    return pd.read_csv(
-        datadir.joinpath(f"merged_{num_tags}_tag_probs_by_{time_precision}.csv"),
-        index_col="timestamp",
-        parse_dates=["timestamp"] if parse_timestamp else False,
+    df = pd.read_csv(
+        datadir.joinpath(f"merged_{num_tags}_tag_probs_by_{dimension}.csv"),
+        index_col=index_col,
+        parse_dates=[index_col] if parse_timestamp else False,
     )
+
+    # Normalize tag names to avoid problems with xgboost
+    # (it has problems with [ or ] or <)
+    clean_column_names(df)
+
+    return df
 
 
 def read_tag_token_sets(
@@ -87,8 +102,7 @@ def read_text(
     """
     return pd.read_csv(
         datadir.joinpath(
-            f"merged_text_from_{stringifier_method}_str"
-            f"_by_{time_precision}.csv"
+            f"merged_text_from_{stringifier_method}_str" f"_by_{time_precision}.csv"
         ),
         index_col="timestamp",
         parse_dates=["timestamp"] if parse_timestamp else False,
@@ -108,9 +122,7 @@ def read_text_sets(
 
     X_train, y_train, X_validation, y_validation, X_test, Y_test
     """
-    dataframe = read_text(
-        datadir, time_precision, stringifier_method, parse_timestamp
-    )
+    dataframe = read_text(datadir, time_precision, stringifier_method, parse_timestamp)
 
     return _split_in_training_validation_and_test(dataframe, 1, target)
 

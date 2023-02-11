@@ -17,8 +17,8 @@ class BaselineModel(Model):
             self.y_mean, self.y_std, size=(num_cases, num_predictions)
         )
 
-    def save(self):
+    def save(self, _):
         pass
 
-    def load(self):
+    def load(self, _):
         pass

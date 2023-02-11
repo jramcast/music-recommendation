@@ -16,3 +16,6 @@ class XGBoostRegressor(Model):
 
     def save(self, path: os.PathLike):
         self._model.save_model(path)
+
+    def load(self, path: os.PathLike):
+        self._model.load_model(path)
