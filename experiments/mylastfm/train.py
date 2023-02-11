@@ -32,7 +32,7 @@ def main():
         "bayes",
         "baseline"
     ]
-    TIME_PRECISIONS = ["hours"]
+    TIME_PRECISIONS = ["song"]
 
     configure_logging()
 
@@ -52,7 +52,7 @@ def main():
                             DATA_DIR,
                         )
 
-    if os.environ.get("TRAIN_TOKENS", True):
+    if os.environ.get("TRAIN_TOKENS", False):
         NUM_TOKENS = [100, 1000, 10000]
         STRING_METHODS = ["tag_weight", "repeat_tags"]
 
@@ -158,7 +158,7 @@ def configure_logging():
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         handlers=[
-            logging.FileHandler(Path(__file__).parent.joinpath("results.log")),
+            logging.FileHandler(Path(__file__).parent.joinpath("results_by_song.log")),
             logging.StreamHandler(),
         ],
     )

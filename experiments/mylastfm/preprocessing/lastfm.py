@@ -4,8 +4,9 @@ Last.fm data preprocessing before training.
 This scripts reads the raw Last.fm from a MongoDB and creates a CSV
 """
 
+from operator import itemgetter
 from pathlib import Path
-from typing import Callable, Dict, Tuple, Iterable, List
+from typing import Callable, Dict, Optional, Tuple, Iterable, List, Union
 
 import pandas as pd
 from pymongo import MongoClient
@@ -14,9 +15,10 @@ from tokenizers import Tokenizer, Encoding
 
 from dataloading.raw.entities.track import Track
 from dataloading.raw.lastfm import MongoDBTrackPlaysRepository
+from . import spotify
 
 # A function that represents tags|weights as a string
-Stringifier = Callable[[List[Tuple[str, str]]], str]
+Stringifier = Callable[[Union[List[Tuple[str, str]], List[List[str]]]], str]
 
 
 def create_tag_tokens_by_moment_csv(
@@ -120,12 +122,86 @@ def create_tag_probs_by_moment_csv(
     return moments_to_tag_relevances_df
 
 
+def get_tag_probs_by_track(tags_limit=999999999):
+    """
+    Returns a dict of Last.fm tag relevances by track
+
+    { "artist - track": { "rock": 100, "pop": 100 }}
+    """
+    trackplays = get_all_lastfm_track_plays()
+
+    moment_to_tags_mapping = map_moments_to_tags(trackplays, "hours")
+
+    tag_relevances = create_tags_dataframe_sorted_by_relevance(moment_to_tags_mapping)
+
+    # Limit number of tags to include
+    tag_relevances = tag_relevances[:tags_limit]
+
+    # Get the list of tags
+    tagnames = tag_relevances.index.tolist()
+
+    # Create tags by song mapping
+    tracks_to_tag_relevances_mapping = get_all_last_fm_tags_as_dicts_by_track(tagnames)
+
+    return tracks_to_tag_relevances_mapping
+
+
 def get_all_lastfm_track_plays():
     client = MongoClient()
     db = client.mgr
     repo = MongoDBTrackPlaysRepository(db.lastfm_playedtracks)
     trackplays = repo.all()
     return trackplays
+
+
+def get_all_last_fm_tags_as_dicts_by_track(tags_included: Optional[List[str]] = None):
+    """
+    Returns a dict that maps track keys (artist - track)
+    to a dictionary a tag relevances:
+
+      {"artist - name": {"rock": 23, "electronic" 1}}
+
+    """
+    lastfm_tags_by_track = {}
+    track_plays = get_all_lastfm_track_plays()
+    for trackplay in track_plays:
+        tags = [
+            tag
+            for tag in trackplay.all_tags()
+            if type(tag) == list or type(tag) == tuple
+        ]
+        key = spotify.get_trackanalysis_key(trackplay.artist.name, trackplay.name)
+
+        tags_dict = {t: 0 for t in tags_included or []}
+
+        for tag_name, tag_weight in tags:
+            if not tags_included or tag_name in tags_included:
+                tags_dict[tag_name] = int(tag_weight)
+
+        lastfm_tags_by_track[key] = tags_dict
+
+    return lastfm_tags_by_track
+
+
+def get_all_last_fm_tags_as_text_by_song(stringifier: Stringifier):
+    """
+    Returns a dict that maps track keys (artist - track)
+    to track tags, represented as a string
+
+        {"artist - name": "rock, electronic ..."
+    """
+    lastfm_tags_by_track = {}
+    track_plays = get_all_lastfm_track_plays()
+    for trackplay in track_plays:
+        tags = [
+            tag
+            for tag in trackplay.all_tags()
+            if type(tag) == list or type(tag) == tuple
+        ]
+        key = spotify.get_trackanalysis_key(trackplay.artist.name, trackplay.name)
+        lastfm_tags_by_track[key] = stringifier(tags)
+
+    return lastfm_tags_by_track
 
 
 MomentTags = Dict[str, List[Tuple[str, str]]]
@@ -253,8 +329,6 @@ def create_moments_to_tags_relevance_df(tagnames, moments_to_tag_relevances_mapp
     return df
 
 
-
-
 def convert_moment_tag_strings_to_tokens(
     moment_to_string_mapping: Dict[str, str], tokenizer: Tokenizer
 ):
@@ -296,6 +370,19 @@ def tag_stringifier_repeat_tag(tags_and_weights: List[Tuple[str, str]]):
         as_strings.append(" ".join([tag.strip()] * int(weight)))
 
     return ", ".join(as_strings)
+
+
+def tag_stringifier_weight_as_order(tags_and_weights: List[Tuple[str, str]]):
+    """
+    [(rock, 2), (metal, 4)] ----> "metal, rock"
+    """
+    as_strings = []
+    tags_and_weights_sorted = sorted(tags_and_weights, key=itemgetter(1), reverse=True)
+
+    for tag, weight in tags_and_weights:
+        as_strings.append(" ".join([tag.strip()] * int(weight)))
+
+    return ", ".join([tag for tag, weight in tags_and_weights_sorted])
 
 
 def get_tags_from_token_ids(tokenizer: Tokenizer, ids: List[int]):

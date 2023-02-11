@@ -1,5 +1,6 @@
 from pathlib import Path
 import statistics
+from typing import Dict, Union
 
 import pandas as pd
 from pymongo import MongoClient
@@ -24,6 +25,17 @@ FEATURES = [
 ]
 
 
+def get_features_for_all_songs():
+    client = MongoClient()
+    db = client.mgr
+    features_repo = MongoDBSpotifyAudioFeaturesRepository(db.spotify_audiofeatures)
+
+    for track in features_repo.all_features():
+        if track.has_features():
+            yield track
+
+
+
 def generate_aggregate_features_by_moment_csv(
     csv_filename: Path, time_precision="hours"
 ):
@@ -40,7 +52,7 @@ def generate_aggregate_features_by_moment_csv(
     features_by_track = {}
     features_cursor = features_repo.all_features()
     for f in features_cursor:
-        key = _get_trackanalysis_key(f.track_artist, f.track_name)
+        key = get_trackanalysis_key(f.track_artist, f.track_name)
         features_by_track[key] = f.features[0]
 
         if len(f.features) > 1:
@@ -48,7 +60,7 @@ def generate_aggregate_features_by_moment_csv(
 
     for track in trackplays_repo.all():
 
-        trackanalysis_key = _get_trackanalysis_key(track.artist.name, track.name)
+        trackanalysis_key = get_trackanalysis_key(track.artist.name, track.name)
         trackfeatures = features_by_track.get(trackanalysis_key)
 
         if not trackfeatures:
@@ -93,5 +105,5 @@ def generate_aggregate_features_by_moment_csv(
     return df
 
 
-def _get_trackanalysis_key(artist, name):
+def get_trackanalysis_key(artist, name):
     return f"{artist} - {name}"

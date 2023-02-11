@@ -43,6 +43,34 @@ Explain how the data has been prepared for training with different representatio
 - Weight is represented as the tag repeated according to the weight: `summer summer summer`
 
 
+#### Training By Track
+
+When generating training data by track, the tabular formats present sparsity problems.
+
+The format is as follows:
+
+```
+{
+    "artist - name": { 
+        "eletronica": 100,
+        "rock": 80,
+        "pop": 45,
+        "jazz": 0,
+        "nu-jazz": 0,
+        "country": 0,
+        "soul": 0,
+    }
+}
+```
+
+For tabular representations, we need to defined a fixed set of columns as tags.
+For most of tracks, most columns are `0`.
+
+The sparsity of a matrix is the number of zero-valued elements divided by the total number of elements (e.g., m × n for an m × n matrix) is called the sparsity of the matrix 
+// TODO: compare sparsity values between by-moment data and by-track data
+
+
+
 ## Models
 
 Regression models included in the experiment:
