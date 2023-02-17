@@ -8,7 +8,6 @@ from transformers import (
     MODEL_FOR_CAUSAL_LM_MAPPING,
     AutoConfig,
     AutoModelForSequenceClassification,
-    GPT2ForSequenceClassification,
     AutoTokenizer,
     HfArgumentParser,
     Trainer,
@@ -20,8 +19,8 @@ from transformers import (
 from transformers.testing_utils import CaptureLogger
 
 MODEL_NAME = "gpt2"
-TRAIN_FILE = "dataset_train.csv"
-VALIDATION_FILE = "dataset_validation.csv"
+TRAIN_FILE = "../../data/jaime_lastfm/merged_tag_texts_from_tag_order_str_by_track_train.csv"
+VALIDATION_FILE = "../../data/jaime_lastfm/merged_tag_texts_from_tag_order_str_by_track_validation.csv"
 PREPROCESSING_NUM_WORKERS = None
 BLOCKSIZE = 4
 
@@ -46,7 +45,6 @@ model = AutoModelForSequenceClassification.from_pretrained(
     MODEL_NAME, from_tf=False, config=config, revision="main"
 )
 
-
 model.resize_token_embeddings(len(tokenizer))
 
 # Build datasets
@@ -70,7 +68,7 @@ def tokenize_function(examples):
     label = examples["danceability"]
     text = examples["tags"]
 
-    result = tokenizer(text, padding=True, max_length=tokenizer.model_max_length, truncation=True)
+    result = tokenizer(text, padding=True, max_length=512, truncation=True)
     result["label"] = label
 
     return result
@@ -179,5 +177,5 @@ logger.info("*** Example ***")
 
 pipe = pipeline("text-classification", model=training_args.output_dir)
 
-tags = "Hello I am Jaime"
+tags = "make me all night"
 print(tags, pipe(tags))
