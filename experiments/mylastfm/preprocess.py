@@ -14,13 +14,14 @@ import preprocessing.lastfm
 import preprocessing.spotify
 import dataloading.lastfm
 import dataloading.spotify
+from preprocessing.lastfm import STRINGIFIERS
 
 
 def main():
     TIME_PRECISION = os.environ.get("TIME_PRECISION", "hours")
-    TAG_LIMITS = [100, 1000, 10000, 20000]
-    TOKEN_LIMITS = [100, 1000, 10000, 20000]
-    STRINGIFY_METHODS = ["tag_weight_str", "repeat_tags_str"]
+    TAG_LIMITS = [100, 1000, 10000]
+    TOKEN_LIMITS = [100, 1000, 10000]
+    STRINGIFY_METHODS = STRINGIFIERS.keys()
 
     if os.environ.get("LASTFM_AS_TOKENS", False):
         for limit in TOKEN_LIMITS:
@@ -43,18 +44,16 @@ def main():
             TIME_PRECISION, TAG_LIMITS, TOKEN_LIMITS, STRINGIFY_METHODS
         )
 
-    # if os.environ.get("BY_SONG_LASTFM_AS_TOKENS", False):
-    #     for limit in TOKEN_LIMITS:
-    #         for method in STRINGIFY_METHODS:
-    #             generate_tokenized_tags_spotify_features_csv_by_song(limit, method)
-
     if os.environ.get("BY_TRACK_LASTFM_AS_PROBS", False):
         for limit in TAG_LIMITS:
-            generate_tabular_tag_probs_and_spotify_features_csv_by_song(limit)
+            generate_tabular_tag_probs_and_spotify_features_csv_by_track(limit)
 
     if os.environ.get("BY_TRACK_LASTFM_AS_TOKENS", False):
-        for method in STRINGIFY_METHODS:
-            generate_tag_texts_and_spotify_features_csv_by_song("asdf")
+        for limit in TOKEN_LIMITS:
+            for method in STRINGIFY_METHODS:
+                generate_tabular_tag_tokens_and_spotify_features_csv_by_track(
+                    limit, method
+                )
 
 
 def generate_tabular_tag_probs_csv(time_precision: str, tags_limit: int):
@@ -93,13 +92,7 @@ def generate_tokenized_tags_csv(
     """
     Generate a csv of tokens, treating tags as natural text and using a tokenizer
     """
-
-    stringifiers = {
-        "tag_weight_str": preprocessing.lastfm.tag_stringifier_include_weight,
-        "repeat_tags_str": preprocessing.lastfm.tag_stringifier_repeat_tag,
-    }
-
-    stringifier = stringifiers[stringifier_key]
+    stringifier = STRINGIFIERS[stringifier_key]
 
     with Halo(text="Generating dataframe of Last.fm tag tokens by moment"):
         TOKENS_CSV_FILEPATH = Path(__file__).parent.joinpath(
@@ -128,12 +121,7 @@ def generate_texts_csv(time_precision: str, stringifier_key: str):
     Generate a csv of texts, concatenating tags
     """
 
-    stringifiers = {
-        "tag_weight_str": preprocessing.lastfm.tag_stringifier_include_weight,
-        "repeat_tags_str": preprocessing.lastfm.tag_stringifier_repeat_tag,
-    }
-
-    stringifier = stringifiers[stringifier_key]
+    stringifier = STRINGIFIERS[stringifier_key]
 
     with Halo(text="Generating dataframe of Last.fm concatenated tags by moment"):
         TOKENS_CSV_FILEPATH = Path(__file__).parent.joinpath(
@@ -238,7 +226,7 @@ def merge_lastfm_and_spotify_csvs(
             dataset.to_csv(path, index=True)
 
 
-def generate_tabular_tag_probs_and_spotify_features_csv_by_song(tags_limit: int):
+def generate_tabular_tag_probs_and_spotify_features_csv_by_track(tags_limit: int):
     """
     Generate a csv of probability values per track and per tag.
     Tags are not tokenized, preprocessed or stemmized.
@@ -276,7 +264,7 @@ def generate_tabular_tag_probs_and_spotify_features_csv_by_song(tags_limit: int)
             spotify_data.append(
                 {
                     "track": key,
-                    **track_features.get_features_dict(preprocessing.spotify.FEATURES)
+                    **track_features.get_features_dict(preprocessing.spotify.FEATURES),
                 }
             )
 
@@ -303,41 +291,70 @@ def generate_tabular_tag_probs_and_spotify_features_csv_by_song(tags_limit: int)
     print("Dataframe saved to: ", TAGS_CSV_FILEPATH)
 
 
-# TODO Tokenized tags by song
-# def generate_tokenized_tags_spotify_features_csv_by_song(
-#     time_precision: str, token_limit: int, stringifier_key: str
-# ):
-#     """
-#     Generate a csv of tokens, treating tags as natural text and using a tokenizer
-#     """
+def generate_tabular_tag_tokens_and_spotify_features_csv_by_track(
+    token_limit: int, stringifier_key: str
+):
+    """
+    Generate a csv of probability values per track and per tag.
+    Tags are not tokenized, preprocessed or stemmized.
+    Each different tag is a column
+    """
+    CSV_FILEPATH = Path(__file__).parent.joinpath(
+        f"../../data/jaime_lastfm/merged_{token_limit}_tokens_from_"
+        f"{stringifier_key}_by_track.csv"
+    )
 
-#     stringifiers = {
-#         "tag_weight_str": preprocessing.lastfm.tag_stringifier_include_weight,
-#         "repeat_tags_str": preprocessing.lastfm.tag_stringifier_repeat_tag,
-#     }
+    print(
+        "=== Generating dataframe of "
+        f"Last.fm TOKENS ({stringifier_key}) + Spotify features by song..."
+    )
 
-#     stringifier = stringifiers[stringifier_key]
+    tokenizer = preprocessing.lastfm.init_tokenizer(token_limit)
+    stringifier = STRINGIFIERS[stringifier_key]
 
-#     with Halo(text="Generating dataframe of Last.fm tag tokens by moment"):
-#         TOKENS_CSV_FILEPATH = Path(__file__).parent.joinpath(
-#             f"../../data/jaime_lastfm/lastfm_{token_limit}_tokens_from_"
-#             f"{stringifier_key}_by_{time_precision}.csv"
-#         )
+    lastfm_tokens_by_track = preprocessing.lastfm.get_tag_tokens_by_track(
+        stringifier, tokenizer
+    )
 
-#         tokenizer = preprocessing.lastfm.init_tokenizer(token_limit)
-#         tokens_by_moment = preprocessing.lastfm.create_tag_tokens_by_moment_csv(
-#             TOKENS_CSV_FILEPATH, tokenizer, stringifier, time_precision
-#         )
+    spotify_data = []
+    # Get all tracks from DB that include audio features
+    for track_features in preprocessing.spotify.get_features_for_all_songs():
 
-#     print("")
-#     print(
-#         f"Last.fm tags token CSV generated for time precision {time_precision} "
-#         f"and token limit {token_limit}"
-#     )
-#     print("Data frame shape", tokens_by_moment.shape)
-#     print("Example")
-#     print(tokens_by_moment.head())
-#     print("Dataframe saved to: ", TOKENS_CSV_FILEPATH)
+        key = preprocessing.spotify.get_trackanalysis_key(
+            track_features.track_artist, track_features.track_name
+        )
+
+        if key in lastfm_tokens_by_track:
+            spotify_data.append(
+                {
+                    "track": key,
+                    **track_features.get_features_dict(preprocessing.spotify.FEATURES),
+                }
+            )
+
+    last_fm_df = pd.DataFrame.from_dict(lastfm_tokens_by_track, orient="index")
+    last_fm_df.index.rename("track", inplace=True)
+
+    spotify_df = pd.DataFrame(spotify_data).set_index("track")
+
+    dataset = pd.merge(
+        last_fm_df,
+        spotify_df,
+        left_index=True,
+        right_index=True
+    )
+
+    dataset.to_csv(CSV_FILEPATH, index=True)
+
+    print("")
+    print(
+        f"Last.fm tags TOKENS + Spotify features CSV generated by track "
+        f"codifying tokens with {stringifier_key} "
+        f"and TOKENS limit{token_limit}"
+    )
+    print("Data frame shape", dataset.shape)
+    print(dataset.head())
+    print("Dataframe saved to: ", CSV_FILEPATH)
 
 
 def generate_tag_texts_and_spotify_features_csv_by_song(stringifier_key: str):
@@ -345,14 +362,8 @@ def generate_tag_texts_and_spotify_features_csv_by_song(stringifier_key: str):
     Generate a csv of last.fm tags as texts and Spotify features, by song
     """
 
-    stringifiers = {
-        "tag_weight_str": preprocessing.lastfm.tag_stringifier_include_weight,
-        "repeat_tags_str": preprocessing.lastfm.tag_stringifier_repeat_tag,
-        "weight_as_order": preprocessing.lastfm.tag_stringifier_weight_as_order,
-    }
-
-    lastfm_tags_by_track = preprocessing.lastfm.get_all_last_fm_tags_as_text_by_song(
-        stringifiers[stringifier_key]
+    lastfm_tags_by_track = preprocessing.lastfm.get_all_last_fm_tags_as_text_by_track(
+        STRINGIFIERS[stringifier_key]
     )
 
     data = []

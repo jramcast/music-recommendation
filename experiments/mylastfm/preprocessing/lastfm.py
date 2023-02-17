@@ -6,7 +6,7 @@ This scripts reads the raw Last.fm from a MongoDB and creates a CSV
 
 from operator import itemgetter
 from pathlib import Path
-from typing import Callable, Dict, Optional, Tuple, Iterable, List, Union
+from typing import Callable, Dict, Optional, Tuple, Iterable, List
 
 import pandas as pd
 from pymongo import MongoClient
@@ -18,7 +18,7 @@ from dataloading.raw.lastfm import MongoDBTrackPlaysRepository
 from . import spotify
 
 # A function that represents tags|weights as a string
-Stringifier = Callable[[Union[List[Tuple[str, str]], List[List[str]]]], str]
+Stringifier = Callable[[List[Tuple[str, str]]], str]
 
 
 def create_tag_tokens_by_moment_csv(
@@ -146,6 +146,17 @@ def get_tag_probs_by_track(tags_limit=999999999):
     return tracks_to_tag_relevances_mapping
 
 
+def get_tag_tokens_by_track(stringifier: Stringifier, tokenizer: Tokenizer):
+    """
+    Returns a dict of Last.fm tags converted to text tokens
+
+    { "artist - track": [45, 34, 656, 34,...]}
+    """
+    tags_by_track = get_all_last_fm_tags_as_text_by_track(stringifier)
+    tokens_by_track = convert_track_tag_strings_to_tokens(tags_by_track, tokenizer)
+    return tokens_by_track
+
+
 def get_all_lastfm_track_plays():
     client = MongoClient()
     db = client.mgr
@@ -183,7 +194,7 @@ def get_all_last_fm_tags_as_dicts_by_track(tags_included: Optional[List[str]] = 
     return lastfm_tags_by_track
 
 
-def get_all_last_fm_tags_as_text_by_song(stringifier: Stringifier):
+def get_all_last_fm_tags_as_text_by_track(stringifier: Stringifier):
     """
     Returns a dict that maps track keys (artist - track)
     to track tags, represented as a string
@@ -194,7 +205,7 @@ def get_all_last_fm_tags_as_text_by_song(stringifier: Stringifier):
     track_plays = get_all_lastfm_track_plays()
     for trackplay in track_plays:
         tags = [
-            tag
+            tuple(tag)
             for tag in trackplay.all_tags()
             if type(tag) == list or type(tag) == tuple
         ]
@@ -342,6 +353,19 @@ def convert_moment_tag_strings_to_tokens(
     return moment_to_token_ids_mapping
 
 
+def convert_track_tag_strings_to_tokens(
+    track_to_string_mapping: Dict[str, str], tokenizer: Tokenizer
+):
+    moment_to_token_ids_mapping: Dict[str, List[int]] = {}
+
+    for track in track_to_string_mapping:
+        text = track_to_string_mapping[track]
+        encoding: Encoding = tokenizer.encode(text)
+        moment_to_token_ids_mapping[track] = encoding.ids
+
+    return moment_to_token_ids_mapping
+
+
 def init_tokenizer(token_limit: int):
     tokenizer: Tokenizer = Tokenizer.from_pretrained("bert-base-uncased")
     max_length = token_limit
@@ -383,6 +407,13 @@ def tag_stringifier_weight_as_order(tags_and_weights: List[Tuple[str, str]]):
         as_strings.append(" ".join([tag.strip()] * int(weight)))
 
     return ", ".join([tag for tag, weight in tags_and_weights_sorted])
+
+
+STRINGIFIERS: Dict[str, Stringifier] = {
+    "tag_weight_str": tag_stringifier_include_weight,
+    "repeat_tags_str": tag_stringifier_repeat_tag,
+    "tag_order_str": tag_stringifier_weight_as_order,
+}
 
 
 def get_tags_from_token_ids(tokenizer: Tokenizer, ids: List[int]):
