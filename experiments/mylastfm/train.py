@@ -27,37 +27,33 @@ def main():
         "instrumentalness",
         "valence",
     ]
-    MODELS = [
-        "xdg",
-        "bayes",
-        "baseline"
-    ]
-    TIME_PRECISIONS = ["track"]
+    MODELS = ["xdg", "bayes", "baseline"]
+    DIMENSIONS = ["track"]
 
     configure_logging()
 
-    if os.environ.get("TRAIN_PROBS", True):
+    if os.environ.get("TRAIN_PROBS", False):
         NUM_TAGS = [100, 1000, 10000]
 
         for num_tokens in NUM_TAGS:
-            for time_precision in TIME_PRECISIONS:
+            for dimension in DIMENSIONS:
                 for target in TARGET_FEATURES:
                     for model in MODELS:
                         train_with_tag_probs(
                             target,
                             model,
                             num_tokens,
-                            time_precision,
+                            dimension,
                             MODELS_SAVE_DIR,
                             DATA_DIR,
                         )
 
-    if os.environ.get("TRAIN_TOKENS", False):
+    if os.environ.get("TRAIN_TOKENS", True):
         NUM_TOKENS = [100, 1000, 10000]
-        STRING_METHODS = ["tag_weight", "repeat_tags"]
+        STRING_METHODS = ["tag_weight", "repeat_tags", "tag_order"]
 
         for num_tokens in NUM_TOKENS:
-            for time_precision in TIME_PRECISIONS:
+            for dimension in DIMENSIONS:
                 for stringifier_method in STRING_METHODS:
                     for target in TARGET_FEATURES:
                         for model in MODELS:
@@ -65,7 +61,7 @@ def main():
                                 target,
                                 model,
                                 num_tokens,
-                                time_precision,
+                                dimension,
                                 stringifier_method,
                                 MODELS_SAVE_DIR,
                                 DATA_DIR,
@@ -116,14 +112,14 @@ def train_with_tag_tokens(
     target: str,
     model_key: str,
     num_tokens: int,
-    time_precision: str,
+    dimension: str,
     stringifier_method: str,
     models_save_dir: Path,
     data_dir: Path,
 ):
     experiment = (
         f"{target}-{model_key}-{num_tokens}_tokens-"
-        f"from_{stringifier_method}-by_{time_precision}"
+        f"from_{stringifier_method}-by_{dimension}"
     )
 
     (
@@ -134,7 +130,7 @@ def train_with_tag_tokens(
         _,
         _,
     ) = dataloading.read_tag_token_sets(
-        data_dir, num_tokens, target, time_precision, stringifier_method
+        data_dir, num_tokens, target, dimension, stringifier_method, index_col=dimension
     )
 
     logger = logging.getLogger(experiment)

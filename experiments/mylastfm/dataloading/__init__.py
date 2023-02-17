@@ -19,9 +19,7 @@ def read_tag_probs_sets(
 
     X_train, y_train, X_validation, y_validation, X_test, Y_test
     """
-    dataframe = read_tag_probs(
-        datadir, num_tags, dimension, parse_timestamp, index_col
-    )
+    dataframe = read_tag_probs(datadir, num_tags, dimension, parse_timestamp, index_col)
 
     return _split_in_training_validation_and_test(dataframe, num_tags, target)
 
@@ -54,9 +52,10 @@ def read_tag_token_sets(
     datadir: Path,
     num_tokens: int,
     target: str,
-    time_precision: str,
+    dimension: str,
     stringifier_method: str,
     parse_timestamp=False,
+    index_col="timestamp",
 ):
     """
     Returns training validation and test sets, as:
@@ -64,7 +63,7 @@ def read_tag_token_sets(
     X_train, y_train, X_validation, y_validation, X_test, Y_test
     """
     dataframe = read_tag_tokens(
-        datadir, num_tokens, time_precision, stringifier_method, parse_timestamp
+        datadir, num_tokens, dimension, stringifier_method, parse_timestamp, index_col
     )
 
     return _split_in_training_validation_and_test(dataframe, num_tokens, target)
@@ -73,9 +72,10 @@ def read_tag_token_sets(
 def read_tag_tokens(
     datadir: Path,
     num_tokens: int,
-    time_precision: str,
+    dimension: str,
     stringifier_method: str,
     parse_timestamp=False,
+    index_col="timestamp",
 ):
     """
     Load the precomputed Last.fm tag tokens
@@ -84,10 +84,10 @@ def read_tag_tokens(
     return pd.read_csv(
         datadir.joinpath(
             f"merged_{num_tokens}_tokens_from_{stringifier_method}_str"
-            f"_by_{time_precision}.csv"
+            f"_by_{dimension}.csv"
         ),
-        index_col="timestamp",
-        parse_dates=["timestamp"] if parse_timestamp else False,
+        index_col=index_col,
+        parse_dates=[index_col] if parse_timestamp else False,
     )
 
 
