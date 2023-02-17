@@ -144,3 +144,4 @@ data/
 
 # Generated models
 *experiments/mylastfm/_models
+*experiments/mylastfm/.model
