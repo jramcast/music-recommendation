@@ -157,6 +157,7 @@ def get_tag_tokens_by_track(stringifier: Stringifier, tokenizer: Tokenizer):
     return tokens_by_track
 
 
+
 def get_all_lastfm_track_plays():
     client = MongoClient()
     db = client.mgr
