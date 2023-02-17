@@ -17,12 +17,15 @@ from transformers import (
     pipeline
 )
 from transformers.testing_utils import CaptureLogger
+from transformers.trainer_utils import get_last_checkpoint
+
+from evaluation import calculate_metrics
 
 MODEL_NAME = "gpt2"
 TRAIN_FILE = "../../data/jaime_lastfm/merged_tag_texts_from_tag_order_str_by_track_train.csv"
 VALIDATION_FILE = "../../data/jaime_lastfm/merged_tag_texts_from_tag_order_str_by_track_validation.csv"
 PREPROCESSING_NUM_WORKERS = None
-BLOCKSIZE = 4
+BLOCKSIZE = 512
 
 
 logger = logging.getLogger(__name__)
@@ -92,29 +95,13 @@ if BLOCKSIZE > tokenizer.model_max_length:
 block_size = min(BLOCKSIZE, tokenizer.model_max_length)
 
 
-# # Pad line by line
-# def prepare_sentence_and_target(examples):
-#     result = tokenizer.pad(examples, padding=True)
-#     result["labels"] = result["input_ids"].copy()
-#     return result
-
-
-# Note that with `batched=True`, this map processes 1,000 texts together, so group_texts throws away a remainder
-# for each of those groups of 1,000 texts. You can adjust that batch_size here but a higher value might be slower
-# to preprocess.
-#
-# To speed up this part, we use multiprocessing. See the documentation of the map method for more information:
-# https://huggingface.co/docs/datasets/package_reference/main_classes.html#datasets.Dataset.map
-
-# lm_datasets = tokenized_datasets.map(
-#     prepare_sentence_and_target,
-#     batched=True,
-#     num_proc=PREPROCESSING_NUM_WORKERS,
-#     load_from_cache_file=True,
-# )
-
 train_dataset = lm_datasets["train"]
 eval_dataset = lm_datasets["validation"]
+
+
+def compute_metrics(eval_pred):
+    predictions, labels = eval_pred
+    return calculate_metrics(labels, predictions)
 
 
 trainer = Trainer(
@@ -125,6 +112,7 @@ trainer = Trainer(
     tokenizer=tokenizer,
     # Data collator will default to DataCollatorWithPadding, so we change it.
     data_collator=default_data_collator,
+    compute_metrics=compute_metrics
 )
 
 
@@ -177,5 +165,5 @@ logger.info("*** Example ***")
 
 pipe = pipeline("text-classification", model=training_args.output_dir)
 
-tags = "make me all night"
+tags = "make me dance all night"
 print(tags, pipe(tags))
