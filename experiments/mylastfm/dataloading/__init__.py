@@ -1,6 +1,8 @@
 from pathlib import Path
+from typing import Optional, cast
 
 import pandas as pd
+from datasets import load_dataset, DatasetDict
 from sklearn.model_selection import train_test_split
 
 from preprocessing import clean_column_names
@@ -91,40 +93,64 @@ def read_tag_tokens(
     )
 
 
-def read_text(
-    datadir: Path,
-    time_precision: str,
-    stringifier_method: str,
-    parse_timestamp=False,
-):
-    """
-    Load the precomputed Last.fm tags joined as simple text
-    """
-    return pd.read_csv(
-        datadir.joinpath(
-            f"merged_text_from_{stringifier_method}_str" f"_by_{time_precision}.csv"
-        ),
-        index_col="timestamp",
-        parse_dates=["timestamp"] if parse_timestamp else False,
-    )
-
-
 def read_text_sets(
     datadir: Path,
-    time_precision: str,
+    dimension: str,
+    target_column_name: str,
     stringifier_method: str,
-    target: str,
-    parse_timestamp=False,
+    tokenizer_model_name: str,
+    tokenizer_workers: Optional[int] = None,
+    block_length=256,
+    text_column_name="tags",
+    max_train_samples: Optional[int] = None,
+    max_validation_samples: Optional[int] = None,
+    max_test_samples: Optional[int] = None,
 ):
-
     """
-    Returns training validation and test sets for the texts dataset, as:
+    Load the precomputed Last.fm tags as text
+    to be used by the transformers library
 
-    X_train, y_train, X_validation, y_validation, X_test, Y_test
+    Returns a tuple of datasets.DatasetDict as:
+    {
+        "train": Dataset,
+        "validation": Dataset,
+        "test": Dataset,
+    }
     """
-    dataframe = read_text(datadir, time_precision, stringifier_method, parse_timestamp)
+    train_file = datadir.joinpath(
+        f"merged_tag_texts_from_{stringifier_method}_str_by_{dimension}_train.csv"
+    )
+    validation_file = datadir.joinpath(
+        f"merged_tag_texts_from_{stringifier_method}_str_by_{dimension}_validation.csv"
+    )
+    test_file = datadir.joinpath(
+        f"merged_tag_texts_from_{stringifier_method}_str_by_{dimension}_test.csv"
+    )
 
-    return _split_in_training_validation_and_test(dataframe, 1, target)
+    datasets = cast(
+        DatasetDict,
+        load_dataset(
+            "csv",
+            data_files={
+                "train": str(train_file),
+                "validation": str(validation_file),
+                "test": str(test_file),
+            },
+        ),
+    )
+
+    if max_train_samples:
+        datasets["train"] = datasets["train"].select(range(max_train_samples))
+
+    if max_validation_samples:
+        datasets["validation"] = datasets["validation"].select(
+            range(max_validation_samples)
+        )
+
+    if max_test_samples:
+        datasets["test"] = datasets["test"].select(range(max_test_samples))
+
+    return datasets
 
 
 def _split_in_training_validation_and_test(

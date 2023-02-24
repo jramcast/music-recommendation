@@ -8,7 +8,7 @@ class Model(ABC):
     """
 
     @abstractmethod
-    def fit(self, X, y):
+    def fit(self, *args, **kwargs):
         raise NotImplementedError
 
     @abstractmethod

@@ -27,7 +27,8 @@ def main():
         "instrumentalness",
         "valence",
     ]
-    MODELS = ["xdg", "bayes", "baseline"]
+    TABULAR_MODELS = ["xdg", "bayes", "baseline"]
+    TRANSFORMER_MODELS = ["gpt2"]
     DIMENSIONS = ["track"]
 
     configure_logging()
@@ -38,7 +39,7 @@ def main():
         for num_tokens in NUM_TAGS:
             for dimension in DIMENSIONS:
                 for target in TARGET_FEATURES:
-                    for model in MODELS:
+                    for model in TABULAR_MODELS:
                         train_with_tag_probs(
                             target,
                             model,
@@ -48,7 +49,7 @@ def main():
                             DATA_DIR,
                         )
 
-    if os.environ.get("TRAIN_TOKENS", True):
+    if os.environ.get("TRAIN_TOKENS", False):
         NUM_TOKENS = [100, 1000, 10000]
         STRING_METHODS = ["tag_weight", "repeat_tags", "tag_order"]
 
@@ -56,7 +57,7 @@ def main():
             for dimension in DIMENSIONS:
                 for stringifier_method in STRING_METHODS:
                     for target in TARGET_FEATURES:
-                        for model in MODELS:
+                        for model in TABULAR_MODELS:
                             train_with_tag_tokens(
                                 target,
                                 model,
@@ -66,6 +67,22 @@ def main():
                                 MODELS_SAVE_DIR,
                                 DATA_DIR,
                             )
+
+    if os.environ.get("TRAIN_TEXTS", True):
+        STRING_METHODS = ["tag_weight", "repeat_tags", "tag_order"]
+
+        for dimension in DIMENSIONS:
+            for stringifier_method in STRING_METHODS:
+                for target in TARGET_FEATURES:
+                    for model in TRANSFORMER_MODELS:
+                        train_with_tag_texts(
+                            target,
+                            model,
+                            dimension,
+                            stringifier_method,
+                            MODELS_SAVE_DIR,
+                            DATA_DIR,
+                        )
 
 
 def train_with_tag_probs(
@@ -148,6 +165,60 @@ def train_with_tag_tokens(
     experiment_metrics = training_metrics.evaluate(experiment, y_validation, y_pred)
     log_metrics(logger, experiment_metrics)
     models_save_dir.joinpath(f"{experiment}.json")
+
+
+"""
+Run this as:
+
+    python train.py \
+        --do_train \
+        --do_eval \
+        --overwrite_output_dir \
+        --output_dir .model \
+        --per_device_eval_batch_size 20 \
+        --per_device_train_batch_size 5 \
+        --num_train_epochs 10 \
+        --save_steps 2000
+"""
+
+
+def train_with_tag_texts(
+    target: str,
+    model_key: str,
+    dimension: str,
+    stringifier_method: str,
+    models_save_dir: Path,
+    data_dir: Path,
+):
+    experiment = (
+        f"{target}-{model_key}-_tag_texts-" f"from_{stringifier_method}-by_{dimension}"
+    )
+
+    datasets = dataloading.read_text_sets(
+        data_dir,
+        dimension,
+        target,
+        stringifier_method,
+        tokenizer_model_name=model_key,
+        # TODO: full dataset
+        max_train_samples=10,
+        max_validation_samples=10,
+        max_test_samples=10,
+    )
+
+    logger = logging.getLogger(experiment)
+    logger.info("Training Set: " + str(datasets["train"].shape))
+    logger.info("Validation Set: " + str(datasets["validation"].shape))
+    logger.info("Test Set: " + str(datasets["test"].shape))
+
+    model = training.models.get_model(
+        model_key,
+        target_column_name=target,
+        logger=logger
+    )
+    model.fit(datasets)
+
+    # TODO: evaluate
 
 
 def configure_logging():
