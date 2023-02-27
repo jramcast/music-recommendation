@@ -16,17 +16,20 @@ training_metrics = evaluation.TrainingMetrics(
 
 
 def main():
-    DATA_DIR = Path(__file__).parent.joinpath("../../data/jaime_lastfm")
+    DEFAULT_DATA_DIR = Path(__file__).parent.joinpath("../../data/jaime_lastfm")
+    DATA_DIR = Path(os.getenv("DATA_DIR", DEFAULT_DATA_DIR))
     MODELS_SAVE_DIR = Path(__file__).parent.joinpath("_models")
-    # TODO: Use more features
-    # acousticness,danceability,duration_ms,energy,instrumentalness,key,liveness,loudness,mode,speechiness,tempo,valence
-    TARGET_FEATURES = [
-        "danceability",
-        "acousticness",
-        "energy",
-        "instrumentalness",
-        "valence",
-    ]
+    TARGET_FEATURE = os.getenv("TARGET_FEATURE")
+    if TARGET_FEATURE:
+        TARGET_FEATURES = [TARGET_FEATURE]
+    else:
+        TARGET_FEATURES = [
+            "danceability",
+            "acousticness",
+            "energy",
+            "instrumentalness",
+            "valence",
+        ]
     TABULAR_MODELS = ["xdg", "bayes", "baseline"]
     TRANSFORMER_MODELS = ["gpt2"]
     DIMENSIONS = ["track"]
@@ -51,7 +54,11 @@ def main():
 
     if os.environ.get("TRAIN_TOKENS", False):
         NUM_TOKENS = [100, 1000, 10000]
-        STRING_METHODS = ["tag_weight", "repeat_tags", "tag_order"]
+        STRING_METHOD = os.getenv("STRING_METHOD")
+        if STRING_METHOD:
+            STRING_METHODS = [STRING_METHOD]
+        else:
+            STRING_METHODS = ["tag_weight", "repeat_tags", "tag_order"]
 
         for num_tokens in NUM_TOKENS:
             for dimension in DIMENSIONS:
@@ -164,22 +171,8 @@ def train_with_tag_tokens(
     y_pred = model.predict(X_validation)
     experiment_metrics = training_metrics.evaluate(experiment, y_validation, y_pred)
     log_metrics(logger, experiment_metrics)
-    models_save_dir.joinpath(f"{experiment}.json")
 
-
-"""
-Run this as:
-
-    python train.py \
-        --do_train \
-        --do_eval \
-        --overwrite_output_dir \
-        --output_dir .model \
-        --per_device_eval_batch_size 20 \
-        --per_device_train_batch_size 5 \
-        --num_train_epochs 10 \
-        --save_steps 2000
-"""
+    model.save(models_save_dir.joinpath(f"{experiment}.json"))
 
 
 def train_with_tag_texts(
@@ -200,10 +193,10 @@ def train_with_tag_texts(
         target,
         stringifier_method,
         tokenizer_model_name=model_key,
-        # TODO: full dataset
-        max_train_samples=10,
-        max_validation_samples=10,
-        max_test_samples=10,
+        # Uncomment to use a subset of the data
+        # max_train_samples=5,
+        # max_validation_samples=5,
+        # max_test_samples=5,
     )
 
     logger = logging.getLogger(experiment)
@@ -211,11 +204,21 @@ def train_with_tag_texts(
     logger.info("Validation Set: " + str(datasets["validation"].shape))
     logger.info("Test Set: " + str(datasets["test"].shape))
 
+    model_save_dir = models_save_dir.joinpath(experiment)
+
     model = training.models.get_model(
         model_key,
         target_column_name=target,
-        logger=logger
+        output_dir=model_save_dir,
+        logger=logger,
+        train_epochs=10,
+        train_batch_size=10,
+        eval_batch_size=10,
+        # Uncomment to run a smaller train phase 
+        # train_save_steps=200,
+        # eval_steps=100,
     )
+
     model.fit(datasets)
 
     # TODO: evaluate

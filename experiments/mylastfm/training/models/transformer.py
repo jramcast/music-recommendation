@@ -1,27 +1,19 @@
 import logging
 import os
 from typing import Optional
-from datasets import load_dataset, DatasetDict
-
-import transformers
+from datasets import DatasetDict
 from transformers import (
-    CONFIG_MAPPING,
-    MODEL_FOR_CAUSAL_LM_MAPPING,
     AutoConfig,
     AutoModelForSequenceClassification,
     AutoTokenizer,
-    HfArgumentParser,
     Trainer,
     TrainingArguments,
     default_data_collator,
     set_seed,
     pipeline,
 )
-from transformers.testing_utils import CaptureLogger
 from transformers.trainer_utils import get_last_checkpoint
-
 from evaluation import calculate_metrics
-
 from .interface import Model
 
 
@@ -30,15 +22,27 @@ class TransformerRegressor(Model):
         self,
         model_name: str,
         target_column_name: str,
+        output_dir: str,
+        train_epochs: int,
         text_column_name="tags",
+        train_batch_size=20,
+        eval_batch_size=20,
+        train_save_steps=1000,
+        eval_steps=500,
         preprocessing_num_workers: Optional[int] = None,
         block_size: int = 256,
         logger: Optional[logging.Logger] = None,
     ):
         self.model_name = model_name
         self.target_column_name = target_column_name
+        self.output_dir = output_dir
+        self.train_epochs = train_epochs
         self.text_column_name = text_column_name
         self.preprocessing_num_workers = preprocessing_num_workers
+        self.train_batch_size = train_batch_size
+        self.eval_batch_size = eval_batch_size
+        self.train_save_steps = train_save_steps
+        self.eval_steps = eval_steps
         self.block_size = block_size
         self.logger = logger or logging.getLogger(__name__)
         self.training_args = self._parse_training_args()
@@ -48,8 +52,27 @@ class TransformerRegressor(Model):
         set_seed(self.training_args.seed)
 
     def _parse_training_args(self) -> TrainingArguments:
-        parser = HfArgumentParser(TrainingArguments)
-        (training_args,) = parser.parse_args_into_dataclasses()
+
+        # parser = HfArgumentParser(TrainingArguments)
+        # (training_args,) = parser.parse_args_into_dataclasses()
+
+        training_args = TrainingArguments(
+            do_train=True,
+            do_eval=True,
+            do_predict=True,
+            overwrite_output_dir=True,
+            output_dir=self.output_dir,
+            save_steps=self.train_save_steps,
+            eval_steps=self.eval_steps,
+            per_device_train_batch_size=self.train_batch_size,
+            per_device_eval_batch_size=self.eval_batch_size,
+            num_train_epochs=self.train_epochs,
+            evaluation_strategy="steps",
+            load_best_model_at_end=True,
+            metric_for_best_model="rmse",
+            greater_is_better=False
+        )
+
         return training_args
 
     def fit(self, datasets: DatasetDict):
@@ -70,7 +93,7 @@ class TransformerRegressor(Model):
             train_dataset=train_dataset,
             eval_dataset=validation_dataset,
             tokenizer=self.tokenizer,
-            # Data collator will default to DataCollatorWithPadding, so we change it.
+            # Data collator defaults to DataCollatorWithPadding, so we change it.
             data_collator=default_data_collator,
             compute_metrics=compute_metrics,
         )
@@ -116,13 +139,23 @@ class TransformerRegressor(Model):
         trainer.save_metrics("train", metrics)
         trainer.save_state()
 
-        self.logger.info("*** Evaluate ***")
+        if self.training_args.do_eval:
+            self.logger.info("*** Evaluate ***")
 
-        metrics = trainer.evaluate()
-        metrics["eval_samples"] = len(validation_dataset)
+            metrics = trainer.evaluate()
+            metrics["eval_samples"] = len(validation_dataset)
 
-        trainer.log_metrics("eval", metrics)
-        trainer.save_metrics("eval", metrics)
+            trainer.log_metrics("eval", metrics)
+            trainer.save_metrics("eval", metrics)
+
+        if self.training_args.do_predict:
+            self.logger.info("*** Test ***")
+
+            metrics = trainer.evaluate(test_dataset)
+            metrics["test_samples"] = len(validation_dataset)
+
+            trainer.log_metrics("test", metrics)
+            trainer.save_metrics("test", metrics)
 
     def predict(self, text: str):
         pipe = pipeline("text-classification", model=self.training_args.output_dir)

@@ -1,0 +1,9 @@
+FROM pytorch/pytorch
+
+COPY requirements.train.38.txt .
+
+RUN pip install -r requirements.train.38.txt
+
+COPY . .
+
+CMD ["python", "train.py"]

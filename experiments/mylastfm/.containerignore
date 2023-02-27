@@ -1,0 +1,4 @@
+_models
+__pycache__
+*.log
+data
