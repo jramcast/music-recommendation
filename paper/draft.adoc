@@ -6,21 +6,73 @@ In this paper, we discuss a number of experiments to analyze the suitability of 
 
 == Introduction
 
-The remainder of the article is organized as follows.
-In section 2, we discuss...
+Music information retrieval (MIR) is a field that focuses on the analysis, processing and knowledge discovery of information sotred in music pieces.
 
+Many of the challenges in this field use audio features, such as valence and energy, to predict other music-related aspects.
+For example, some studies have been using these features to predict the probabily of a track being a hit [REF].
+
+To make these predictions, researchers have been using machine learning models, specially over the past few years.
+Previously, researchers commonly used hand-crafted audio computational models to peform these tasks.
+
+But what if we tried to use these audio features as the predicted values? We would need a set of predictor variables to acurrately predict the value of audio features.
+This premise is the core concept of this article.
+
+The idea is, given a set of tags, to predict a set of audio features that a hypothetic track would exhibit.
+Then, we could build a track selection algorithm that selects actual tracks that are the closest to the predicted audio features.
+This process could be part of an explainable recommendation pipeline, where users enter a set of tags, and they recieve the predicted audio features, the closest tracks to those features, and the distance values between each track and the predicted features.
+
+In the remainder of the article, we explain the data gathering and preparation process, as well as the data input formats and varios models.
+We will explore various models for the same track and provide insights on how accurately the prediction can be, by using only Last.fm tags.
 
 == State of the Art
 
-Introduce relevant studies about MIR.
+In recent years, researchers have used Last.fm tags in classification and regression tasks.
+Several studies have used Last.fm to predict music sentiment or mood.
 
-MIR is a
+https://core.ac.uk/download/pdf/234915638.pdf
 
-TODO...
+https://sciendo.com/pdf/10.2478/ausi-2018-0009
+
+https://archives.ismir.net/ismir2009/paper/000018.pdf
+
+Additionally, the Spotify audio features
+
+In general, these studies confirm the posibility of extracting knowledge from Last.fm tags.
+To the best of our knowledge, no studies have addressed the problem of audio features regression, based solely on Last.fm tags.
+
+To be Continued...
+
+== Generating a DataSet
+
+Before conducting experiments on predicting audio features from tags, we constructed a dataset, by gathering the data from the Last.fm and Spotify APIs.
+
+== A Single-user Dataset
+
+Similar to other intelligent systems, recommender systems
+must be trained, by using user preference data, to produce
+adequate recommendations. For our recommendation framework,
+we have leveraged the knowledge discovery potential
+of large historical listening logs, gathered from Last.fm.
+
+To characterize the preferences and context of the user, we
+have chosen to start with a simple scenario, where just data
+from a single user is available. By training our system with
+data from a single user, we also want to begin a discussion,
+given the following question: Is it possible to train 
+recommender systems, and in particular, user-centric systems, by
+using a single-user dataset?
+
+To the best of our knowledge, research on user-centric rec-
+ommender systems has concentrated its efforts on explain-
+able AI Wang et al. [2019], and also user-centered evaluation
+of these systems Knijnenburg et al. [2012]. We also argue
+that recommender systems that exploit the preferences of a
+single user, or a reduced number of users, might as well be
+considered as user-centric models.
 
 == Last.fm
 
-Last.fm is a online music service for uses to keep track of their music listenting habits.
+Last.fm is a online music community for users to keep track of their music listenting habits.
 Last.fm can also be considered as an community where users tag artists, albums, and tracks, according the the own perception of the user.
 
 For nearly two decades, users have been contributing to Last.fm by tagging tracks with arbitrary text labels.
@@ -29,13 +81,12 @@ Users often use short sentences to define a song, such as `I like this track`, o
 
 Our study leverages Last.fm tags to predict music audio features.
 
+
+
 == Spotify Audio Features
 
 Originally called Echo Nest audio features, these features are a set of descriptors that define a music audio signal with continuous values.
 After the adquisition of Echo Nest by Spotify, Spotify integrated these features into their API.
-
-
-
 
 == Dataset Generation
 
@@ -48,6 +99,21 @@ categorize music from their own perspective, which
 means that tags do not fit into any structured ontology
 or data model. Tags can refer to aspects such as genre,
 emotion, or user context.
+The format is as follows:
++
+```
+{
+    "artist - name": { 
+        "eletronica": 100,
+        "rock": 80,
+        "pop": 45,
+        "jazz": 0,
+        "nu-jazz": 0,
+        "country": 0,
+        "soul": 0,
+    }
+}
+```
 
 *  _Track audio features from the Spotify API_. These are
 attributes computed from the audio themselves. They
@@ -141,21 +207,7 @@ Tag are converted to strings by using the same _stringify_ mechanisms.
 
 When generating training data by track, the tabular formats present sparsity problems.
 
-The format is as follows:
 
-```
-{
-    "artist - name": { 
-        "eletronica": 100,
-        "rock": 80,
-        "pop": 45,
-        "jazz": 0,
-        "nu-jazz": 0,
-        "country": 0,
-        "soul": 0,
-    }
-}
-```
 
 For tabular representations, we need to defined a fixed set of columns as tags.
 For most of tracks, most columns are `0`.
