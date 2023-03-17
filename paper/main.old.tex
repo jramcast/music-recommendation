@@ -1,20 +1,35 @@
-= Predicting Audio Features with Last.fm Tags
+\documentclass[fleqn,10pt]{olplainarticle}
 
+\title{Predicting Audio Features with Last.fm Tags}
 
-== Abstract
-In this paper, we discuss a number of experiments to analyze the suitability of music label representations to predict certain audio features, such as danceability, loudness, or acousticness.
+\author[1]{Jaime Ramírez Castillo}
+\author[1]{M. Julia Flores}
+\affil[1]{Departamento de Sistemas Informáticos, Universidad de Castilla - La Mancha, Spain}
 
-== Introduction
+\keywords{Music information retrieval, Artificial intelligence}
 
-Music information retrieval (MIR) is a field that focuses on the analysis, processing and knowledge discovery of information sotred in music pieces.
+\begin{abstract}
+In this paper, we discuss a number of experiments to analyze the suitability of music label representations to predict certain audio features, such as danceability, loudness, or acousticness...
+\end{abstract}
+
+\begin{document}
+
+\flushbottom
+\maketitle
+\thispagestyle{empty}
+
+\section*{Introduction}
+
+Music information retrieval (MIR) is a field that focuses on the analysis, processing and knowledge discovery of information stored in music pieces \cite{ramirez2020machine}.
 
 Many of the challenges in this field use audio features, such as valence and energy, to predict other music-related aspects.
-For example, some studies have been using these features to predict the probabily of a track being a hit [REF].
+For example, some studies have been using these features to predict the probably of a track being a hit [REF].
 
 To make these predictions, researchers have been using machine learning models, specially over the past few years.
-Previously, researchers commonly used hand-crafted audio computational models to peform these tasks.
+Previously, researchers commonly used hand-crafted audio computational models to perform these tasks.
 
-But what if we tried to use these audio features as the predicted values? We would need a set of predictor variables to acurrately predict the value of audio features.
+But what if we tried to use these audio features as the predicted values? We would need a set of predictor variables to
+acurrately predict the value of audio features.
 This premise is the core concept of this article.
 
 The idea is, given a set of tags, to predict a set of audio features that a hypothetic track would exhibit.
@@ -24,29 +39,29 @@ This process could be part of an explainable recommendation pipeline, where user
 In the remainder of the article, we explain the data gathering and preparation process, as well as the data input formats and varios models.
 We will explore various models for the same track and provide insights on how accurately the prediction can be, by using only Last.fm tags.
 
-== State of the Art
+\section*{State of the Art}
 
 In recent years, researchers have used Last.fm tags in classification and regression tasks.
 Several studies have used Last.fm to predict music sentiment or mood.
 
-https://core.ac.uk/download/pdf/234915638.pdf
+% https://core.ac.uk/download/pdf/234915638.pdf
 
-https://sciendo.com/pdf/10.2478/ausi-2018-0009
+% https://sciendo.com/pdf/10.2478/ausi-2018-0009
 
-https://archives.ismir.net/ismir2009/paper/000018.pdf
+% https://archives.ismir.net/ismir2009/paper/000018.pdf
 
-Additionally, the Spotify audio features
+Additionally, the Spotify audio features...
 
 In general, these studies confirm the posibility of extracting knowledge from Last.fm tags.
 To the best of our knowledge, no studies have addressed the problem of audio features regression, based solely on Last.fm tags.
 
-To be Continued...
+\textcolor{red}{To be Continued...}
 
-== Generating a DataSet
+\section*{Generating a Dataset}
 
 Before conducting experiments on predicting audio features from tags, we constructed a dataset, by gathering the data from the Last.fm and Spotify APIs.
 
-== A Single-user Dataset
+\subsection*{A Single-user Dataset}
 
 Similar to other intelligent systems, recommender systems
 must be trained, by using user preference data, to produce
@@ -70,78 +85,39 @@ that recommender systems that exploit the preferences of a
 single user, or a reduced number of users, might as well be
 considered as user-centric models.
 
-== Last.fm
 
-Last.fm is a online music community for users to keep track of their music listenting habits.
+\subsection*{Last.fm}
+
+Last.fm is a online music service for uses to keep track of their music listenting habits.
 Last.fm can also be considered as an community where users tag artists, albums, and tracks, according the the own perception of the user.
 
 For nearly two decades, users have been contributing to Last.fm by tagging tracks with arbitrary text labels.
 These tags do not necessarily have to be single-worded.
 Users often use short sentences to define a song, such as `I like this track`, or `on the beach`.
 
-Our study leverages Last.fm tags to predict music audio features.
-
-
-
-== Spotify Audio Features
-
-Originally called Echo Nest audio features, these features are a set of descriptors that define a music audio signal with continuous values.
-After the adquisition of Echo Nest by Spotify, Spotify integrated these features into their API.
-
-== Dataset Generation
-
-Considering a set of tracks, we can gather the following attributes for each track:
-
-*  _Community-contributed tags from the Last.fm API_.
+Community-contributed tags from the Last.fm API.
 These tags are text labels that Last.fm users assign
 to artists, albums, or tracks. Users apply these tags to
 categorize music from their own perspective, which
 means that tags do not fit into any structured ontology
 or data model. Tags can refer to aspects such as genre,
 emotion, or user context.
-The format is as follows:
-+
-```
-{
-    "artist - name": { 
-        "eletronica": 100,
-        "rock": 80,
-        "pop": 45,
-        "jazz": 0,
-        "nu-jazz": 0,
-        "country": 0,
-        "soul": 0,
-    }
-}
-```
 
-*  _Track audio features from the Spotify API_. These are
-attributes computed from the audio themselves. They
-are a way to describe music by using numerical values.
-For example, a danceability attribute of 0.95 means
-that a particular song is highly suitable for dancing.
-
-To construct the dataset, we have downloaded the data from
-the Last.fm and Spotify APIs. The user we picked for our
-research has been sending telemetry data to Last.fm since
-2007. This user has reported more that 90,000 track play-
-backs over 15 years.
-FOOTNOTE: The Last.fm account used in this work belongs the correspond-
-ing author of this article. The listening history of this user is avail-
-able at https://www.last.fm/user/jimmydj2000/.
-
-=== Last.fm Tags
-Last.fm uses the term _scrobble_ to refer to a single track play-
-back, in a particular moment. We have queried the Last.fm
-API to download the user’s scrobble logs, reported from 2007 to 2022.
+\subsubsection*{Last.fm Tags}
+Last.fm uses the term \emph{scrobble} to refer to a single track playback,
+in a particular moment. We have queried the Last.fm
+API to download the user{'}s scrobble logs, reported from 2007 to 2022.
 For each scrobble, we have gathered the following information:
 
-* Track playback timestamp.
-* Track MusicBrainz Identifier (MBID), if exists.
-* Track name
-* Artist name
-* Track tags. If the track does not have any tags assigned,
-then artist tags have been used.
+\begin{itemize}
+     \item Track playback timestamp.
+     \item Track MusicBrainz Identifier (MBID), if exists.
+     \item Track name
+     \item Artist name
+     \item Track tags. If the track does not have any tags assigned,
+      then artist tags have been used.
+\end{itemize}
+
 
 For each tag assigned to a track, or an artist, Last.fm includes
 a count property to indicate the popularity of the given tag for the track.
@@ -153,7 +129,24 @@ so the amount of individual tracks listened is much smaller
 than the number of track plays. In this case, the amount of
 individual tracks listened is about 20,000.
 
-=== Spotify Audio Features
+The format is as follows:
+
+\begin{verbatim}
+{
+      "artist - name": {
+            "eletronica": 100,
+            "rock": 80,
+            "pop": 45,
+            "jazz": 0,
+            "nu-jazz": 0,
+            "country": 0,
+            "soul": 0,
+      }
+}
+\end{verbatim}
+
+
+\subsection*{Spotify}
 
 After gathering Last.fm data and identifying the unique
 tracks that represent the user music collection, we have
@@ -166,8 +159,8 @@ sent high-level audio information computed from a specific
 track. These values characterize a track, musically speaking,
 by measuring relevant musical aspects.
 
-The features provided by the Spotify API are: acousticness,
-danceability, duration_ms, energy, instrumentalness, key,
+The features provided by the Spotify API are acousticness,
+danceability, duration\textunderscore ms, energy, instrumentalness, key,
 liveness, loudness, mode, speechiness, tempo, and valence.
 Table 1 describes these features. The reader can find further
 details about each feature in the Spotify API documentation
@@ -179,63 +172,66 @@ Spotify, so they have been filtered out from our experiments.
 After filtering songs that miss Last.fm tags or Spotify audio features,
 our dataset contains 14009 samples.
 
-=== Last.fm Tags Representations for Training
+\emph{Track audio features from the Spotify API}. These are
+attributes computed from the audio themselves. They
+are a way to describe music by using numerical values.
+For example, a danceability attribute of 0.95 means
+that a particular song is highly suitable for dancing.
 
-Based on the model and the experiments, we have preprocessed tags in various formats:
+\subsection*{Last.fm Tags Representations for Training}
 
-Tabular::
+
+\subsubsection*{Tabular}
 Each tag is a column and each cell contains the popularity value of a tag for a track.
 A cell is 0 if a tag is missing for a track.
 
 The number of columns is limited to the top-K tags.
 
-Tabular Tokens::
+\subsubsection*{Tabular Tokens}
+
 Tags are converted to text tokens. Columns represent token positions, and cells contain the token at a particular position, for a track.
 To tokenize tags, we have used the GTP2 tokenizer.
 Because the tokenizer requires a string as input, we have converted the set of tags for each track into a string.
-To _stringify_ the tags, we have concatenated tags with multiple strategies:
-+
-* By including tag popularity: `rock 2, pop 1`.
-* By repeating tags based on popularity: `rock rock, pop`.
-* By ordering by popularity: `rock, pop`.
+To \emph{stringify} the tags, we have concatenated tags with multiple strategies:
 
-Text::
-Tag are converted to strings by using the same _stringify_ mechanisms.
+\begin{itemize}
+      \item By including tag popularity: `rock 2, pop 1`.
+      \item By repeating tags based on popularity: `rock rock, pop`.
+      \item By ordering by popularity: `rock, pop`.
+\end{itemize}
 
-
-#### Training By Track
+\subsection*{Training Data By Track}
 
 When generating training data by track, the tabular formats present sparsity problems.
-
-
 
 For tabular representations, we need to defined a fixed set of columns as tags.
 For most of tracks, most columns are `0`.
 
-The sparsity of a matrix is the number of zero-valued elements divided by the total number of elements (e.g., m × n for an m × n matrix) is called the sparsity of the matrix 
-// TODO: compare sparsity values between by-moment data and by-track data
+The sparsity of a matrix is the number of zero-valued elements divided by the total number of elements
+(e.g., m * n for an m * n matrix) is called the sparsity of the matrix
 
-## Experiments
 
-We have trained a group of well-known machine learning models to predict an audio feature, given the set of tags for a particular track.
+\section*{Experiments}
 
-### Models
+\textcolor{red}{TODO}
 
-Regression models included in the experiment:
+\subsection*{Models}
 
-- Boosted tree regressor: https://xgboost.readthedocs.io/en/stable/tutorials/model.html
+\textcolor{red}{TODO}
 
-- Naive Bayes Regressor: A probabilistic model for regression https://scikit-learn.org/stable/modules/linear_model.html#bayesian-ridge-regression
 
-- Transformer (GPT-2) for regression (Fine tuning).
-This transformer model has been finetuned with our dataset.
 
-Describe how the different data representation have been tested with different models
+\section*{Conclusions}
 
-== Results
+\textcolor{red}{TODO}
 
-== Conclusion
 
-In this paper, we discuss the process of predicting audio features from text tags.
-The experiments that we have conducted use different mechanisms to encode the input data and different models to evaluate whether such task is feasible.
+
+\section*{Acknowledgments}
+
+\textcolor{red}{TODO}
+
+\bibliography{sample}
+
+\end{document}
 

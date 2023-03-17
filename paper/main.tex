@@ -1,26 +1,144 @@
-\documentclass[fleqn,10pt]{olplainarticle}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                                                 %%
+%% Please do not use \input{...} to include other tex files.       %%
+%% Submit your LaTeX manuscript as one .tex document.              %%
+%%                                                                 %%
+%% All additional figures and files should be attached             %%
+%% separately and not embedded in the \TeX\ document itself.       %%
+%%                                                                 %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\title{Predicting Audio Features with Last.fm Tags}
+%%\documentclass[referee,sn-basic]{sn-jnl}% referee option is meant for double line spacing
 
-\author[1]{Jaime Ramírez Castillo}
-\author[1]{M. Julia Flores}
-\affil[1]{Departamento de Sistemas Informáticos, Universidad de Castilla - La Mancha, Spain}
+%%=======================================================%%
+%% to print line numbers in the margin use lineno option %%
+%%=======================================================%%
 
-\keywords{Music information retrieval, Artificial intelligence}
+%%\documentclass[lineno,sn-basic]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
 
-\begin{abstract}
-In this paper, we discuss a number of experiments to analyze the suitability of music label representations to predict certain audio features, such as danceability, loudness, or acousticness...
-\end{abstract}
+%%======================================================%%
+%% to compile with pdflatex/xelatex use pdflatex option %%
+%%======================================================%%
+
+%%\documentclass[pdflatex,sn-basic]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
+
+%%\documentclass[sn-basic]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
+\documentclass[sn-mathphys]{sn-jnl}% Math and Physical Sciences Reference Style
+%%\documentclass[sn-aps]{sn-jnl}% American Physical Society (APS) Reference Style
+%%\documentclass[sn-vancouver]{sn-jnl}% Vancouver Reference Style
+%%\documentclass[sn-apa]{sn-jnl}% APA Reference Style
+%%\documentclass[sn-chicago]{sn-jnl}% Chicago-based Humanities Reference Style
+%%\documentclass[sn-standardnature]{sn-jnl}% Standard Nature Portfolio Reference Style
+%%\documentclass[default]{sn-jnl}% Default
+%%\documentclass[default,iicol]{sn-jnl}% Default with double column layout
+
+%%%% Standard Packages
+%%<additional latex packages if required can be included here>
+%%%%
+
+%%%%%=============================================================================%%%%
+%%%%  Remarks: This template is provided to aid authors with the preparation
+%%%%  of original research articles intended for submission to journals published
+%%%%  by Springer Nature. The guidance has been prepared in partnership with
+%%%%  production teams to conform to Springer Nature technical requirements.
+%%%%  Editorial and presentation requirements differ among journal portfolios and
+%%%%  research disciplines. You may find sections in this template are irrelevant
+%%%%  to your work and are empowered to omit any such section if allowed by the
+%%%%  journal you intend to submit to. The submission guidelines and policies
+%%%%  of the journal take precedence. A detailed User Manual is available in the
+%%%%  template package for technical guidance.
+%%%%%=============================================================================%%%%
+
+\jyear{2023}%
+
+%% as per the requirement new theorem styles can be included as shown below
+\theoremstyle{thmstyleone}%
+\newtheorem{theorem}{Theorem}%  meant for continuous numbers
+%%\newtheorem{theorem}{Theorem}[section]% meant for sectionwise numbers
+%% optional argument [theorem] produces theorem numbering sequence instead of independent numbers for Proposition
+\newtheorem{proposition}[theorem]{Proposition}%
+%%\newtheorem{proposition}{Proposition}% to get separate numbers for theorem and proposition etc.
+
+\theoremstyle{thmstyletwo}%
+\newtheorem{example}{Example}%
+\newtheorem{remark}{Remark}%
+
+\theoremstyle{thmstylethree}%
+\newtheorem{definition}{Definition}%
+
+\raggedbottom
+%%\unnumbered% uncomment this for unnumbered level heads
+
+
+
+
+% JAIME: this is to hide font size warnings
+\usepackage{anyfontsize}
+
+
+
 
 \begin{document}
 
-\flushbottom
+\title[Predicting Audio Features with Last.fm Tags]{Predicting Audio Features with Last.fm Tags}
+
+%%=============================================================%%
+%% Prefix	-> \pfx{Dr}
+%% GivenName	-> \fnm{Joergen W.}
+%% Particle	-> \spfx{van der} -> surname prefix
+%% FamilyName	-> \sur{Ploeg}
+%% Suffix	-> \sfx{IV}
+%% NatureName	-> \tanm{Poet Laureate} -> Title after name
+%% Degrees	-> \dgr{MSc, PhD}
+%% \author*[1,2]{\pfx{Dr} \fnm{Joergen W.} \spfx{van der} \sur{Ploeg} \sfx{IV} \tanm{Poet Laureate}
+%%                 \dgr{MSc, PhD}}\email{iauthor@gmail.com}
+%%=============================================================%%
+
+\author*[1]{\fnm{Jaime} \sur{Ramírez Castillo}}\email{Jaime.Ramirez@alu.uclm.es}
+
+\author[1]{\fnm{M. Julia} \sur{Flores}}\email{Julia.Flores@uclm.es}
+\equalcont{These authors contributed equally to this work.}
+
+
+% Departamento de Sistemas Informáticos, Universidad de Castilla - La Mancha, Spai
+
+\affil[1]{\orgdiv{Departamento de Sistemas Informáticos}, \orgname{Universidad de Castilla-La Mancha}, \orgaddress{\street{Campus universitario s/n}, \city{Albacete}, \postcode{02071}, \country{Spain}}}
+
+
+%%==================================%%
+%% sample for unstructured abstract %%
+%%==================================%%
+
+\abstract{
+    In this paper, we discuss a number of experiments to analyze the
+    suitability of music label representations to predict certain audio features,
+    such as danceability, loudness, or acousticness...
+}
+
+%%================================%%
+%% Sample for structured abstract %%
+%%================================%%
+
+% \abstract{\textbf{Purpose:} The abstract serves both as a general introduction to the topic and as a brief, non-technical summary of the main results and their implications. The abstract must not include subheadings (unless expressly permitted in the journal's Instructions to Authors), equations or citations. As a guide the abstract should not exceed 200 words. Most journals do not set a hard limit however authors are advised to check the author instructions for the journal they are submitting to.
+%
+% \textbf{Methods:} The abstract serves both as a general introduction to the topic and as a brief, non-technical summary of the main results and their implications. The abstract must not include subheadings (unless expressly permitted in the journal's Instructions to Authors), equations or citations. As a guide the abstract should not exceed 200 words. Most journals do not set a hard limit however authors are advised to check the author instructions for the journal they are submitting to.
+%
+% \textbf{Results:} The abstract serves both as a general introduction to the topic and as a brief, non-technical summary of the main results and their implications. The abstract must not include subheadings (unless expressly permitted in the journal's Instructions to Authors), equations or citations. As a guide the abstract should not exceed 200 words. Most journals do not set a hard limit however authors are advised to check the author instructions for the journal they are submitting to.
+%
+% \textbf{Conclusion:} The abstract serves both as a general introduction to the topic and as a brief, non-technical summary of the main results and their implications. The abstract must not include subheadings (unless expressly permitted in the journal's Instructions to Authors), equations or citations. As a guide the abstract should not exceed 200 words. Most journals do not set a hard limit however authors are advised to check the author instructions for the journal they are submitting to.}
+
+\keywords{Music information retrieval, Artificial intelligence}
+
+%%\pacs[JEL Classification]{D8, H51}
+
+%%\pacs[MSC Classification]{35A01, 65L10, 65L12, 65L20, 65L70}
+
 \maketitle
-\thispagestyle{empty}
 
-\section*{Introduction}
+\section{Introduction}\label{sec1}
 
-Music information retrieval (MIR) is a field that focuses on the analysis, processing and knowledge discovery of information stored in music pieces \cite{ramirez2020machine}.
+Music information retrieval (MIR) is a field that focuses on the analysis,
+processing and knowledge discovery of latent information in music pieces \cite{ramirez2020machine}.
 
 Many of the challenges in this field use audio features, such as valence and energy, to predict other music-related aspects.
 For example, some studies have been using these features to predict the probably of a track being a hit [REF].
@@ -39,7 +157,7 @@ This process could be part of an explainable recommendation pipeline, where user
 In the remainder of the article, we explain the data gathering and preparation process, as well as the data input formats and varios models.
 We will explore various models for the same track and provide insights on how accurately the prediction can be, by using only Last.fm tags.
 
-\section*{State of the Art}
+\section{State of the Art}
 
 In recent years, researchers have used Last.fm tags in classification and regression tasks.
 Several studies have used Last.fm to predict music sentiment or mood.
@@ -57,11 +175,11 @@ To the best of our knowledge, no studies have addressed the problem of audio fea
 
 \textcolor{red}{To be Continued...}
 
-\section*{Generating a Dataset}
+\section{Generating a Dataset}
 
 Before conducting experiments on predicting audio features from tags, we constructed a dataset, by gathering the data from the Last.fm and Spotify APIs.
 
-\subsection*{A Single-user Dataset}
+\subsection{A Single-user Dataset}
 
 Similar to other intelligent systems, recommender systems
 must be trained, by using user preference data, to produce
@@ -86,7 +204,7 @@ single user, or a reduced number of users, might as well be
 considered as user-centric models.
 
 
-\subsection*{Last.fm}
+\subsection{Last.fm}
 
 Last.fm is a online music service for uses to keep track of their music listenting habits.
 Last.fm can also be considered as an community where users tag artists, albums, and tracks, according the the own perception of the user.
@@ -103,7 +221,7 @@ means that tags do not fit into any structured ontology
 or data model. Tags can refer to aspects such as genre,
 emotion, or user context.
 
-\subsubsection*{Last.fm Tags}
+\subsubsection{Last.fm Tags}
 Last.fm uses the term \emph{scrobble} to refer to a single track playback,
 in a particular moment. We have queried the Last.fm
 API to download the user{'}s scrobble logs, reported from 2007 to 2022.
@@ -146,7 +264,7 @@ The format is as follows:
 \end{verbatim}
 
 
-\subsection*{Spotify}
+\subsection{Spotify}
 
 After gathering Last.fm data and identifying the unique
 tracks that represent the user music collection, we have
@@ -178,16 +296,16 @@ are a way to describe music by using numerical values.
 For example, a danceability attribute of 0.95 means
 that a particular song is highly suitable for dancing.
 
-\subsection*{Last.fm Tags Representations for Training}
+\subsection{Last.fm Tags Representations for Training}
 
 
-\subsubsection*{Tabular}
+\subsubsection{Tabular}
 Each tag is a column and each cell contains the popularity value of a tag for a track.
 A cell is 0 if a tag is missing for a track.
 
 The number of columns is limited to the top-K tags.
 
-\subsubsection*{Tabular Tokens}
+\subsubsection{Tabular Tokens}
 
 Tags are converted to text tokens. Columns represent token positions, and cells contain the token at a particular position, for a track.
 To tokenize tags, we have used the GTP2 tokenizer.
@@ -200,7 +318,7 @@ To \emph{stringify} the tags, we have concatenated tags with multiple strategies
       \item By ordering by popularity: `rock, pop`.
 \end{itemize}
 
-\subsection*{Training Data By Track}
+\subsection{Training Data By Track}
 
 When generating training data by track, the tabular formats present sparsity problems.
 
@@ -211,27 +329,40 @@ The sparsity of a matrix is the number of zero-valued elements divided by the to
 (e.g., m * n for an m * n matrix) is called the sparsity of the matrix
 
 
-\section*{Experiments}
+\section{Experiments}
 
 \textcolor{red}{TODO}
 
-\subsection*{Models}
-
-\textcolor{red}{TODO}
-
-
-
-\section*{Conclusions}
+\subsection{Models}
 
 \textcolor{red}{TODO}
 
 
 
-\section*{Acknowledgments}
+\section{Conclusions}
 
 \textcolor{red}{TODO}
 
-\bibliography{sample}
+
+
+\section{Acknowledgments}
+
+\textcolor{red}{TODO}
+
+
+
+%%===========================================================================================%%
+%% If you are submitting to one of the Nature Portfolio journals, using the eJP submission   %%
+%% system, please include the references within the manuscript file itself. You may do this  %%
+%% by copying the reference list from your .bbl file, paste it into the main manuscript .tex %%
+%% file, and delete the associated \verb+\bibliography+ commands.                            %%
+%%===========================================================================================%%
+
+\bibliography{sn-bibliography}% common bib file
+%% if required, the content of .bbl file can be included here once bbl is generated
+%%\input sn-article.bbl
+
+%% Default %%
+%%\input sn-sample-bib.tex%
 
 \end{document}
-
