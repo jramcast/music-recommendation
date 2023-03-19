@@ -2,6 +2,9 @@
 = Predicting Audio Features with Last.fm Tags
 
 
+// Help about which tense we should
+
+
 == Abstract
 In this paper, we discuss a number of experiments to analyze the suitability of music label representations to predict certain audio features, such as danceability, loudness, or acousticness.
 
@@ -190,6 +193,9 @@ A cell is 0 if a tag is missing for a track.
 
 The number of columns is limited to the top-K tags.
 
+`T_track_tag` is the strengh of `tage` for `track`.
+This value is in the 0-100 range.
+
 Tabular Tokens::
 Tags are converted to text tokens. Columns represent token positions, and cells contain the token at a particular position, for a track.
 To tokenize tags, we have used the GTP2 tokenizer.
@@ -218,7 +224,7 @@ The sparsity of a matrix is the number of zero-valued elements divided by the to
 
 ## Experiments
 
-We have trained a group of well-known machine learning models to predict an audio feature, given the set of tags for a particular track.
+We have trained a commonly used machine learning models to predict an audio feature, given the set of tags for a particular track.
 
 ### Models
 

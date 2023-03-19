@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%                                                                 %%
-%% Please do not use \input{...} to include other tex files.       %%
+%% Please do not use \input{\dots} to include other tex files.       %%
 %% Submit your LaTeX manuscript as one .tex document.              %%
 %%                                                                 %%
 %% All additional figures and files should be attached             %%
@@ -100,8 +100,6 @@
 \equalcont{These authors contributed equally to this work.}
 
 
-% Departamento de Sistemas Informáticos, Universidad de Castilla - La Mancha, Spai
-
 \affil[1]{\orgdiv{Departamento de Sistemas Informáticos}, \orgname{Universidad de Castilla-La Mancha}, \orgaddress{\street{Campus universitario s/n}, \city{Albacete}, \postcode{02071}, \country{Spain}}}
 
 
@@ -112,7 +110,7 @@
 \abstract{
     In this paper, we discuss a number of experiments to analyze the
     suitability of music label representations to predict certain audio features,
-    such as danceability, loudness, or acousticness...
+    such as danceability, loudness, or acousticness \dots 
 }
 
 %%================================%%
@@ -168,12 +166,12 @@ Several studies have used Last.fm to predict music sentiment or mood.
 
 % https://archives.ismir.net/ismir2009/paper/000018.pdf
 
-Additionally, the Spotify audio features...
+Additionally, the Spotify audio features \dots 
 
 In general, these studies confirm the posibility of extracting knowledge from Last.fm tags.
 To the best of our knowledge, no studies have addressed the problem of audio features regression, based solely on Last.fm tags.
 
-\textcolor{red}{To be Continued...}
+\textcolor{red}{To be Continued \dots }
 
 \section{Generating a Dataset}
 
@@ -329,14 +327,212 @@ The sparsity of a matrix is the number of zero-valued elements divided by the to
 (e.g., m * n for an m * n matrix) is called the sparsity of the matrix
 
 
+
+
+
+
+
+
+
+
+
+
+\subsection{Formatting Input Data for Predicting From Last.fm Tags}
+
+The input data passed to the XGBoost regressor is formatted in tabular format, as follows:
+
+\begin{itemize}
+      \item Given that $Tags_{k}$ is the set of most $k$ frequent Last.fm tags in the user listening history
+            and, where each $tag \in Tags_{k}$.
+      \item Given that $Audio$ is the set of Spotify audio features, where each $feat \in Audio$.
+      \item For each $track$:
+      \begin{itemize}
+            \item $X_{track},_{tag}$ is the strengh of $tag$ for $track$. This value is in the $0-100$ range.
+            \item $y_{track},_{feature}$ is the value of the audio feature $y$ for $track$.
+      \end{itemize}
+\end{itemize}
+
+An example of this data format is provided in table \ref{tabular_tags_format}.
+
+\begin{table}[h]
+      \begin{center}
+      \begin{minipage}{\textwidth}
+      \caption{Tabular data format for Last.fm tags in XGBoost and Bayesian regressors}\label{tabular_tags_format}%
+      \begin{tabular}{@{}lllllll@{}}
+      \toprule
+      Track                         & $X_{electronic}$ & $X_{ambient}$ & $X_{\dots}$ & $y_{energy}$ & $y_{valence}$ & $y_{\dots}$ \\
+      \midrule
+      Massive Attack - Blue Lines   & 62               & 6             &  \dots      & 0.496        & 0.947         & \dots  \\
+      The Beta Band - Squares       & 40               & 3             &  \dots      & 0.446        & 0.507         & \dots  \\
+      \dots                         & \dots            & \dots         &  \dots      & \dots        & \dots         & \dots  \\
+      \botrule
+      \end{tabular}
+      \end{minipage}
+      \end{center}
+\end{table}
+
+\subsection{Formatting Input Data for Predicting From Tokens}
+
+In this particular case, the $X$ values of the tabular input data are tokens.
+These tokens are obtained from passing the a string of concatenated Last.fm tags through a tokenizer.
+The formal definition of this data format is as follows:
+
+\begin{itemize}
+      \item Given that $X_l$ is the token vocabulary, where $l$ is the maximum vocabulary length.
+      \item Given that $Audio$ is the set of Spotify audio features, where each $feat \in Audio$.
+      \item For each $track$:
+      \begin{itemize}
+            \item $X_{track},_{n}$ is token found at position $n$, after tokenizing the tags string.
+            \item $y_{track},_{feature}$ is the value of the audio feature $y$ for $track$.
+      \end{itemize}
+\end{itemize}
+
+An example of this data format is provided in table \ref{tabular_token_format}.
+
+\begin{table}[h]
+      \begin{center}
+      \begin{minipage}{\textwidth}
+      \caption{Tabular data format for tokens in XGBoost and Bayesian regressors}\label{tabular_token_format}%
+      \begin{tabular}{@{}llllllll@{}}
+      \toprule
+      Track                         & $X_{0}$ & $X_{1}$ & $X_{2}$ & $X_{\dots}$ & $y_{energy}$ & $y_{valence}$ & $y_{\dots}$ \\
+      \midrule
+      Massive Attack - Blue Lines   & 101     & 5099    & 6154    &  \dots      & 0.496        & 0.947         &  \dots  \\
+      The Beta Band - Squares       & 101     & 4522    & 2600    &  \dots      & 0.446        & 0.507         &  \dots  \\
+      \dots                         & \dots   & \dots   & \dots   &  \dots      & \dots        & \dots         &  \dots  \\
+      \botrule
+      \end{tabular}
+      \end{minipage}
+      \end{center}
+\end{table}
+
+
+\subsection{Formatting Input Data for Predicting From Text}
+
+When using transformer models, the input data is a string.
+We must represent the Last.fm tags, which are initially in the $(tag name, tag popularity)$ form, to a a string.
+
+After converting to a string, the formal definition of the input data is as follows:
+
+\begin{itemize}
+      \item Given that $X$ is tags represented as text.
+      \item Given that $Audio$ is the set of Spotify audio features, where each $feat \in Audio$.
+      \item For each $track$:
+      \begin{itemize}
+            \item $X_{track},_{n}$ is set of tags for $track$, encoded as a single string.
+            \item $y_{track},_{feature}$ is the value of the audio feature $y$ for $track$.
+      \end{itemize}
+\end{itemize}
+
+An example of this data format is provided in table \ref{text_format}.
+
+\begin{table}[h]
+      \begin{center}
+      \begin{minipage}{\textwidth}
+      \caption{Text data format for tokens in XGBoost and Bayesian regressors}\label{text_format}%
+      \begin{tabular}{@{}lllll@{}}
+      \toprule
+      Track                         & $X$                                   & $y_{energy}$ & $y_{valence}$ & $y_{\dots}$ \\
+      \midrule
+      Massive Attack - Blue Lines   & "hip hop, chill, bristol, \dots"      & 0.496        & 0.947         & \dots  \\
+      The Beta Band - Squares       & "alternative rock, folk, \dots"       & 0.446        & 0.507         & \dots \\
+      \dots                         & \dots                                 & \dots        & \dots         & \dots  \\
+      \botrule
+      \end{tabular}
+      \end{minipage}
+      \end{center}
+\end{table}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 \section{Experiments}
 
-\textcolor{red}{TODO}
+We trained a commonly used machine learning models to predict an audio feature, given the set of tags for a particular track.
 
-\subsection{Models}
+\begin{itemize}
+      \item Boosted tree regressor \cite{xgboost}
+      \item Naive Bayes Regressor \cite{bayesian}
+      \item Fine-tuned GPT-2 model
+\end{itemize}
 
-\textcolor{red}{TODO}
+\subsection{Boosted Tree Regressor}
 
+We configured the boosted tree regressor model with the following training parameters:
+
+\begin{table}[h]
+      \begin{center}
+      \begin{minipage}{174pt}
+      \caption{Training parameters for XGBoost regressor}\label{xgboosttable}%
+      \begin{tabular}{@{}llll@{}}
+      \toprule
+      Parameter               & Value \\
+      \midrule
+      objective               & reg:squarederror  \\
+      base score              & 0.5 \\
+      booster                 & gbtree  \\
+      colsample bylevel       & 1 \\
+      colsample bynode        & 1 \\
+      colsample bytree        & 1 \\
+      gamma\footnotemark[1]   & 0 \\
+      learning rate           & 0.300000012 \\
+      max delta step          & 0 \\
+      max depth               & 6 \\
+      min child weight        & 1 \\
+      estimators              & 200  \\
+      n jobs                  & 12  \\
+      num parallel tree       & 1 \\
+      predictor               & auto  \\
+      random state            & 0 \\
+      reg alpha               & 0 \\
+      reg lambda              & 1 \\
+      scale pos weight        & 1 \\
+      subsample               & 2 \\
+      tree method             & auto  \\
+      \botrule
+      \end{tabular}
+      \footnotetext[1]{Minimum loss reduction required to make a further partition on a leaf node of the tree.}
+      \end{minipage}
+      \end{center}
+\end{table}
+
+
+
+
+
+% \begin{table}[h]
+% \begin{center}
+% \begin{minipage}{\textwidth}
+% \caption{Data format for XGBoost regressor}\label{tab2}
+% \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lcccccc@{\extracolsep{\fill}}}
+%       \toprule%
+%       & \multicolumn{3}{@{}c@{}}{Tags as columns\footnotemark[1]} & \multicolumn{3}{@{}c@{}}{Tokens as columns\footnotemark[2]} \\\cmidrule{2-4}\cmidrule{5-7}%
+%       Track & rock &  \dots  & $\y_{valence}$ & $\position_{0} &  \dots $ & $\sigma_{valence}$ \\
+%       \midrule
+%       Element 3  & 100 &  \dots  & 0.563 & 780 A & 1166 & $1239\pm100$\\
+%       Element 4  & 75  &  \dots  & 0.434 & 900 A & 1268 & $1092\pm40$\\
+%       \botrule
+%       \end{tabular*}
+%       \footnotetext{Note: This is an example of table footnote. This is an example of table footnote this is an example of table footnote this is an example of~table footnote this is an example of table footnote.}
+%       \footnotetext[1]{Example for a first table footnote.}
+%       \footnotetext[2]{Example for a second table footnote.}
+% \end{minipage}
+% \end{center}
+% \end{table}
 
 
 \section{Conclusions}
@@ -358,7 +554,7 @@ The sparsity of a matrix is the number of zero-valued elements divided by the to
 %% file, and delete the associated \verb+\bibliography+ commands.                            %%
 %%===========================================================================================%%
 
-\bibliography{sn-bibliography}% common bib file
+\bibliography{bibliography}% common bib file
 %% if required, the content of .bbl file can be included here once bbl is generated
 %%\input sn-article.bbl
 
