@@ -75,7 +75,8 @@
 % JAIME: this is to hide font size warnings
 \usepackage{anyfontsize}
 
-
+% JAIME: For 1e-10 notation
+\usepackage{siunitx}
 
 
 \begin{document}
@@ -472,12 +473,12 @@ We trained a commonly used machine learning models to predict an audio feature, 
 
 \subsection{Boosted Tree Regressor}
 
-We configured the boosted tree regressor model with the following training parameters:
+We configured the boosted tree regressor model with the training parameters listed in table \ref{table_xgboost_training_params}.
 
 \begin{table}[h]
       \begin{center}
       \begin{minipage}{174pt}
-      \caption{Training parameters for XGBoost regressor}\label{xgboosttable}%
+      \caption{Training parameters for XGBoost regressor}\label{table_xgboost_training_params}%
       \begin{tabular}{@{}llll@{}}
       \toprule
       Parameter               & Value \\
@@ -511,28 +512,50 @@ We configured the boosted tree regressor model with the following training param
 \end{table}
 
 
+\subsection{Naive Bayes Regressor}
+
+The Naive Bayes Regressor, and in particular, Bayesian Ridge, is the model used for regression in this case.
+
+% COMMENT copied FROM BayesianRidge source code
+% https://github.com/scikit-learn/scikit-learn/blob/9aaed4987/sklearn/linear_model/_bayes.py#L24
+%
+%     There exist several strategies to perform Bayesian ridge regression. This 
+%     implementation is based on the algorithm described in Appendix A of
+%     (Tipping, 2001) where updates of the regularization parameters are done as
+%     suggested in (MacKay, 1992). Note that according to A New
+%     View of Automatic Relevance Determination (Wipf and Nagarajan, 2008) these
+%     update rules do not guarantee that the marginal likelihood is increasing
+%     between two consecutive iterations of the optimization.
+
+The training parameters are listed in table \ref{table_bayesian_training_params}.
+
+\begin{table}[h]
+      \begin{center}
+      \begin{minipage}{174pt}
+      \caption{Training parameters for XGBoost regressor}\label{table_bayesian_training_params}%
+      \begin{tabular}{@{}llll@{}}
+      \toprule
+      Parameter                     & Value \\
+      \midrule
+      Maximum iterations            & 300   \\
+      Tolerance\footnotemark[1]     & \num{1e-03} \\
+      alpha 1                       & \num{1e-06} \\
+      alpha 2                       & \num{1e-06} \\
+      lambda 1                      & \num{1e-06} \\
+      lambda 2                      & \num{1e-06} \\
+      \botrule
+      \end{tabular}
+      \footnotetext[1]{Tolerance for the stopping criteria.}
+      \end{minipage}
+      \end{center}
+\end{table}
 
 
+\subsection{Fine-tuned Transformer}
 
-% \begin{table}[h]
-% \begin{center}
-% \begin{minipage}{\textwidth}
-% \caption{Data format for XGBoost regressor}\label{tab2}
-% \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lcccccc@{\extracolsep{\fill}}}
-%       \toprule%
-%       & \multicolumn{3}{@{}c@{}}{Tags as columns\footnotemark[1]} & \multicolumn{3}{@{}c@{}}{Tokens as columns\footnotemark[2]} \\\cmidrule{2-4}\cmidrule{5-7}%
-%       Track & rock &  \dots  & $\y_{valence}$ & $\position_{0} &  \dots $ & $\sigma_{valence}$ \\
-%       \midrule
-%       Element 3  & 100 &  \dots  & 0.563 & 780 A & 1166 & $1239\pm100$\\
-%       Element 4  & 75  &  \dots  & 0.434 & 900 A & 1268 & $1092\pm40$\\
-%       \botrule
-%       \end{tabular*}
-%       \footnotetext{Note: This is an example of table footnote. This is an example of table footnote this is an example of table footnote this is an example of~table footnote this is an example of table footnote.}
-%       \footnotetext[1]{Example for a first table footnote.}
-%       \footnotetext[2]{Example for a second table footnote.}
-% \end{minipage}
-% \end{center}
-% \end{table}
+
+\textcolor{red}{TODO}
+
 
 
 \section{Conclusions}
