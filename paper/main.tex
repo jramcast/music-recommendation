@@ -556,6 +556,29 @@ The training parameters are listed in table \ref{table_bayesian_training_params}
 
 \textcolor{red}{TODO}
 
+\subsection{Experiments Execution and Results}
+
+The experiments 
+
+
+\begin{table}[h]
+      \begin{center}
+      \begin{minipage}{\textwidth}
+      \caption{Experiment results. Cells values correspond to the RMSE value.}\label{experiment_results}%
+      \begin{tabular}{@{}llllll@{}}
+      \toprule
+      Experiment                           & Danceability    & Acousticness    & Energy    & Valence    & Instrumentalness \\
+      \midrule
+      $Base_{token}_{weight}$
+      $XGBoost_{Tags}_{energy}$                        & 300   \\
+      XGBoost - $y_{energy}$           & 300   \\
+      XGBoost - Tokens - Weight Repeat     & 300   \\
+      \botrule
+      \end{tabular}
+      \footnotetext[1]{Tolerance for the stopping criteria.}
+      \end{minipage}
+      \end{center}
+\end{table}
 
 
 \section{Conclusions}
