@@ -111,7 +111,7 @@
 \abstract{
     In this paper, we discuss a number of experiments to analyze the
     suitability of music label representations to predict certain audio features,
-    such as danceability, loudness, or acousticness \dots 
+    such as danceability, loudness, or acousticness \dots
 }
 
 %%================================%%
@@ -136,7 +136,7 @@
 
 \section{Introduction}\label{sec1}
 
-Music information retrieval (MIR) is a field that focuses on the analysis,
+Music informationn retrieval (MIR) is a field that focuses on the analysis,
 processing and knowledge discovery of latent information in music pieces \cite{ramirez2020machine}.
 
 Many of the challenges in this field use audio features, such as valence and energy, to predict other music-related aspects.
@@ -161,16 +161,96 @@ We will explore various models for the same track and provide insights on how ac
 In recent years, researchers have used Last.fm tags in classification and regression tasks.
 Several studies have used Last.fm to predict music sentiment or mood.
 
-% https://core.ac.uk/download/pdf/234915638.pdf
 
-% https://sciendo.com/pdf/10.2478/ausi-2018-0009
 
-% https://archives.ismir.net/ismir2009/paper/000018.pdf
+In the last decade, Last.fm tags have been a popular source of metadata for MIR tasks.
+Last.fm tags can contain information the genre, mood, and style of music,
+and might be use to characterize certain features of a music piece.
 
-Additionally, the Spotify audio features \dots
 
-In general, these studies confirm the posibility of extracting knowledge from Last.fm tags.
+Last.fm tags can be useful when the audio signal available,
+for example, due to copyright limitations.
+
+A number of studies have explored the use of Last.fm tags in MIR,
+and have shown promising results in predicting various audio features.
+% For example, tags such as "acoustic", "live", and "instrumental" have been
+% shown to be good predictors of the energy and danceability of a track.
+% Similarly, tags such as "happy," "sad," and "angry" have been used
+% to predict the valence and arousal of a track.
+
+Researchers have used Last.fm tags.
+For example, Laurier et al. analyzed how Last.fm tags categorize mood.
+In their study, they created a semantic mood space based on Last.fm tags \cite{laurier2009music}.
+
+For example, {\c{C}}ano and Morisio discuss the process they follow to create a dataset of music
+lyrics annotated with Last.fm.
+In the creation process, they conclude that Last.fm tags are mostly related to music genre
+and positive moods \cite{ccano2017music}.
+In a similar direction, Bod{\'o} and Szil{\'a}gyi generated a dataset for lyrics genre classification
+by combining the Last.fm with MusicBrainz data \cite{bodo2018connecting}.
+MusicBrainz \footnotemark[1] is an online database of music editorial metadata.
+\footnote[1]{https://musicbrainz.org/}
+
+The Last.fm data has been the most widely used Last.fm dataset\footnotemark[2] in research.
+This dataset is a complementary dataset of the Million Song Dataset (MSD) \cite{Bertin-Mahieux2011}.
+
+\footnotetext[2]{Last.fm dataset, the official song tags and song similarity collection for the Million Song
+Dataset, available at: http://millionsongdataset.com/lastfm.}
+
+
+Additionally, the Spotify audio features have been used in multiple studies.
+Historically, these features were also called "EchoNest audio features".
+Echonest was an online platform was was later acquired by Spotify.
+% https://en.wikipedia.org/wiki/The_Echo_Nest
+
+Wang and Horv{\'a}t use audio features to study differences between male and female artists \cite{wang2019gender}
+
+
+In general, these studies confirm the possibility of extracting knowledge from Last.fm tags.
 To the best of our knowledge, no studies have addressed the problem of audio features regression, based solely on Last.fm tags.
+
+Jamdar et al. used EchoNest audio features, combined with lyrics data to classify songs into emotion tags.
+These classes were first defined based on a Last.fm tags emotion mapping \cite{jamdar2015emotion}.
+
+Similarly, Non-negative Matrix Factorization was applied in combination with EchoNest audio features
+for song recommendations \cite{benzi2016song}.
+
+P4kxspotify is a publicly available dataset that combines music review texts with Spotify audio features.
+The dataset creators argue that, although the terms of service prohibits scraping, their work is ethical \cite{pinter2020p4kxspotify}.
+
+In general, Spotify audio features have been used as predictive variables.
+We, to the best of our knowledge, are unaware of students that uses these features as target variables.
+
+\subsubsection{Machine Learning Models}
+
+Several studies have explored the use of machine learning
+models to predict audio features from audio metadata, such as Last.fm tags.
+% which studies use Last.fm tags as parameters?
+
+The experiments conduced in this study used two classical regression models,
+Boosted tree regressor and Bayesian ridge regressor.
+These two machine learning models that have been widely used in MIR. % is this true? (refs)
+
+Boosted tree regressor is a decision tree-based model that sequentially
+adds weak learners to the model to improve its performance.
+Bayesian ridge regressor, on the other hand,
+is a probabilistic model that uses Bayesian inference to estimate
+the parameters of the model.
+
+Additionally, language models, such as GTP-2 have shown promising results in various
+natural language processing (NLP) and generation.
+
+In this particular study, GTP-2 has been fine-tuned for regression tasks,
+and has shown good performance in predicting audio features from metadata.
+
+This paper aims to apply the boosted tree regressor,
+ Bayesian ridge regressor, and GTP-2 models to predict Spotify audio features from Last.fm tags.
+The experiments compare the performance of these models and evaluate their effectiveness
+in predicting various audio features.
+The results of these experiments will provide insights into
+the use of different machine learning models for MIR tasks
+and can have practical applications
+in music recommendation systems and genre or mood recognition.
 
 
 
@@ -197,7 +277,7 @@ To characterize the preferences and context of the user, we
 have chosen to start with a simple scenario, where just data
 from a single user is available. By training our system with
 data from a single user, we also want to begin a discussion,
-given the following question: Is it possible to train 
+given the following question: Is it possible to train
 recommender systems, and in particular, user-centric systems, by
 using a single-user dataset?
 
@@ -367,7 +447,7 @@ Figure \ref{fig:audio_features_distribution} represents the density function of 
 We can compare our single-user data with a bigger audio features dataset https://www.kaggle.com/datasets/tomigelo/spotify-audio-features.
 This dataset shows similar data distributions.
 
-I have posted a question on the Spotify Developer forum, relative to the release of a dataset 
+I have posted a question on the Spotify Developer forum, relative to the release of a dataset
 https://community.spotify.com/t5/Spotify-for-Developers/May-I-publish-an-open-source-dataset-that-contains-Spotify-Audio/td-p/5529259
 
 
@@ -553,7 +633,7 @@ The Naive Bayes Regressor, and in particular, Bayesian Ridge, is the model used 
 % COMMENT copied FROM BayesianRidge source code
 % https://github.com/scikit-learn/scikit-learn/blob/9aaed4987/sklearn/linear_model/_bayes.py#L24
 %
-%     There exist several strategies to perform Bayesian ridge regression. This 
+%     There exist several strategies to perform Bayesian ridge regression. This
 %     implementation is based on the algorithm described in Appendix A of
 %     (Tipping, 2001) where updates of the regularization parameters are done as
 %     suggested in (MacKay, 1992). Note that according to A New
