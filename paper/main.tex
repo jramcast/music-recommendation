@@ -167,12 +167,19 @@ Several studies have used Last.fm to predict music sentiment or mood.
 
 % https://archives.ismir.net/ismir2009/paper/000018.pdf
 
-Additionally, the Spotify audio features \dots 
+Additionally, the Spotify audio features \dots
 
 In general, these studies confirm the posibility of extracting knowledge from Last.fm tags.
 To the best of our knowledge, no studies have addressed the problem of audio features regression, based solely on Last.fm tags.
 
+
+
+
+
 \textcolor{red}{To be Continued \dots }
+
+
+
 
 \section{Generating a Dataset}
 
@@ -327,14 +334,41 @@ For most of tracks, most columns are `0`.
 The sparsity of a matrix is the number of zero-valued elements divided by the total number of elements
 (e.g., m * n for an m * n matrix) is called the sparsity of the matrix
 
+The mean and standard deviation for each variable are as follows:
 
+\begin{table}[h]
+      \begin{center}
+      \begin{minipage}{\textwidth}
+      \caption{Audio features description}\label{audio_features_stats}%
+      \begin{tabular}{@{}lll@{}}
+      \toprule
+      Feature           & $\mu$ & $\sigma$ \\
+      \midrule
+      Danceability      & 0.599  & 0.193  \\
+      Energy            & 0.631  & 0.233  \\
+      Acousticness      & 0.221  & 0.302  \\
+      Instrumentalness  & 0.514  & 0.382  \\
+      Valence           & 0.435  & 0.279  \\
+      \botrule
+      \end{tabular}
+      \end{minipage}
+      \end{center}
+\end{table}
 
+Figure \ref{fig:audio_features_distribution} represents the density function of each variable.
 
+\begin{figure}[h!]
+      \centering
+      \includegraphics[width=\textwidth]{images/features-distribution.png}
+      \caption{Distribution of audio features}
+      \label{fig:audio_features_distribution}
+\end{figure}
 
+We can compare our single-user data with a bigger audio features dataset https://www.kaggle.com/datasets/tomigelo/spotify-audio-features.
+This dataset shows similar data distributions.
 
-
-
-
+I have posted a question on the Spotify Developer forum, relative to the release of a dataset 
+https://community.spotify.com/t5/Spotify-for-Developers/May-I-publish-an-open-source-dataset-that-contains-Spotify-Audio/td-p/5529259
 
 
 
@@ -558,7 +592,7 @@ The training parameters are listed in table \ref{table_bayesian_training_params}
 
 \subsection{Experiments Execution and Results}
 
-The experiments 
+The experiments:
 
 
 \begin{table}[h]
@@ -569,8 +603,8 @@ The experiments
       \toprule
       Experiment                           & Danceability    & Acousticness    & Energy    & Valence    & Instrumentalness \\
       \midrule
-      $Base_{token}_{weight}$
-      $XGBoost_{Tags}_{energy}$                        & 300   \\
+      $Base_token_{weight}$
+      $XGBoost_Tags_{energy}$                        & 300   \\
       XGBoost - $y_{energy}$           & 300   \\
       XGBoost - Tokens - Weight Repeat     & 300   \\
       \botrule
@@ -580,11 +614,42 @@ The experiments
       \end{center}
 \end{table}
 
+\subsubsection{Results for Tabular Data Models}
+
+\begin{figure}[h!]
+      \centering
+      \includegraphics[width=0.5\textwidth]{images/rmse_by_model_and_limit.png}
+      \caption{RMSE mean and standard deviation by model and tags/tokens limit.}
+      \label{fig:rmse_by_model_and_limit}
+\end{figure}
+
+
+\begin{figure}[h!]
+      \centering
+      \includegraphics[width=0.7\textwidth]{images/rmse_by_model_and_feature.png}
+      \caption{RMSE mean and standard deviation by model and audio feature.}
+      \label{fig:rmse_by_model_and_feature}
+\end{figure}
+
+
+\begin{figure}[h!]
+      \centering
+      \includegraphics[width=0.7\textwidth]{images/rmse_by_model_and_input.png}
+      \caption{RMSE mean and standard deviation by model and input type (tag probablities or tokens).}
+      \label{fig:rmse_by_model_and_input}
+\end{figure}
+
+
+\begin{figure}[h!]
+      \centering
+      \includegraphics[width=0.7\textwidth]{images/rmse_by_feature_and_input.png}
+      \caption{RMSE mean and standard deviation by audio feature and input type (tag probablities or tokens).}
+      \label{fig:rmse_by_feature_and_input}
+\end{figure}
 
 \section{Conclusions}
 
 \textcolor{red}{TODO}
-
 
 
 \section{Acknowledgments}
