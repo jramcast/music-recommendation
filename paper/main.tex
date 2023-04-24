@@ -136,10 +136,26 @@
 
 \section{Introduction}\label{sec1}
 
-Music informationn retrieval (MIR) is a field that focuses on the analysis,
-processing and knowledge discovery of latent information in music pieces \cite{ramirez2020machine}.
+Music information retrieval (MIR) is an interdisciplinary research field that encompasses the extraction,
+processing, and knowledge discovery of information contained in music.
+MIR research intersects with other fields, such as computer science, signal processing, musicology, and sociology.
+The field covers applications in recommendation systems, music classification,
+music source separation, and music generation, among others \cite{ramirez2020machine}.
 
-Many of the challenges in this field use audio features, such as valence and energy, to predict other music-related aspects.
+MIR applications often attempt to extract information from the music audio signal,
+but analyzing associated metadata is also a common practice.
+Audio signals are typically preprocessed and transformed into intermediate formats, such as frequency-based representations.
+Associated metadata, such as editorial information, lyrics, or user-generated content is usually in text format.
+However, metadata can be available as images of videos, for example, when analyzing album artwork, or music videos.
+
+Depending on the specific MIR application, researchers or practitioners expect different output values.
+For example, an application that extracts audio features might return values for the tempo, the key, or the sample rate.
+In more complex applications, where, for example, machine learning is used, applications might return the estimated emotion that a track produces on a listener, or the predicted music genre of a particular track.
+
+
+
+Many of the challenges in this field use audio features to predict other music-related aspects.
+Examples of these features are 
 For example, some studies have been using these features to predict the probably of a track being a hit [REF].
 
 To make these predictions, researchers have been using machine learning models, specially over the past few years.
