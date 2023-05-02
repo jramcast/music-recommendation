@@ -22,10 +22,28 @@ Audio signals are typically preprocessed and transformed into intermediate forma
 Associated metadata, such as editorial information, lyrics, or user-generated content is usually in text format.
 However, metadata can be available as images of videos, for example, when analyzing album artwork, or music videos.
 
-Depending on the specific MIR application, researchers or practicioners expect different output values.
+Depending on the specific MIR application, researchers or practitioners expect different output values.
 For example, an application that extracts audio features might return values for the tempo, the key, or the sample rate.
-In more complex applications, where, for example, machine learning is used, applications might return the estimated emotion that a track produces on a listener, or the predicted music genre of a particular track.
+In more complex applications, where, for example, machine learning is used,
+applications might return the estimated emotion that a track produces on a listener, or the predicted music genre of a particular track.
 
+Among potentially useful input and output values, research has proved Spotify audio features and Last.fm tags to be significant values to characterize music.
+Spotify audio features capture high-level information about the music signal.
+Examples of these values are energy, danceability, or valence, among others.
+Last.fm tags are text labels that users associate to particular tracks, artists or albums in the Last.fm website.
+
+Both types of values have been used as input values mostly for classification tasks, such as music genre recognition,
+where, given Spotify features or Last.fm tasks, the model estimates the music genres of a particular track.
+However, these values have not been used as target values by previous research, to the best of our knowledge.
+In particular, the focus of this article is on predicting Spotify audio features, given a set of Last.fm tags.
+
+By predicting Spotify audio features, we explore the relationship between subjective perception and concrete musical features.
+This approach might help to identify patterns and hidden correlations between how music is percevied, consumed and discovered.
+
+Additionally, predicted audio features could be used in recommendation systems to provide users with explainable recommendations.
+Music recommendations,are not always easy to interpret from the perspective of the listener.
+Users often get recommendations without meaningful explanations or justifications.
+Therefore, by using predicted Spotify features as basis for recommendation, we can explain users why the algorithm suggests a particular track.
 
 
 // old
