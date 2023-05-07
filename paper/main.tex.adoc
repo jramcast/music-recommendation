@@ -112,6 +112,9 @@ that recommender systems that exploit the preferences of a
 single user, or a reduced number of users, might as well be
 considered as user-centric models.
 
+Panda and Redinho explore the use of Spotify features applied to Music Emotion Recognition (MER).
+In particular, they 
+
 == Last.fm
 
 Last.fm is a online music community for users to keep track of their music listenting habits.
