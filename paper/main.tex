@@ -455,12 +455,26 @@ was comparable to the distribution of the \emph{Spotify Audio Features} Kaggle d
 
 \subsection{Filtering Missing Values}
 
-Not every track of the approximately 20,000 included in the Last.fm user{'} listening history
+Not every track of the approximately unique tracks 20,000 of the Last.fm user{'} listening history
 included Last.fm tags and Spotify audio features.
 Tracks without Last.fm tags or without Spotify audio features were filtered out.
 As a result, of the originally 20,000 tracks included in the listening history,
 our dataset final size resulted in 14,009 samples.
 
+
+
+\section{Experiments}
+
+We trained commonly used machine learning models to predict an audio feature, given the set of tags for a particular track.
+
+\begin{itemize}
+      \item Boosted tree regressor \cite{xgboost}
+      \item Naive Bayes Regressor \cite{bayesian}
+      \item Fine-tuned GPT-2 model
+\end{itemize}
+
+The preceding models require specific input formats.
+Therefore, we tested different input formats.
 
 \subsection{Last.fm Tags Input Format}
 
@@ -472,7 +486,8 @@ each one suitable for specific models.
 
 
 \subsubsection{Tabular}
-Each tag is a column and each cell contains the count value of a tag for a track.
+With this format, the Last.fm tags are represented as a table.
+Each tag is defined by a column and each cell contains the count value of a tag for a track.
 A cell is 0 if a tag is missing for a track.
 
 The number of columns is limited to the top-K tags.
@@ -614,30 +629,6 @@ An example of this data format is provided in table \ref{text_format}.
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-\section{Experiments}
-
-We trained a commonly used machine learning models to predict an audio feature, given the set of tags for a particular track.
-
-\begin{itemize}
-      \item Boosted tree regressor \cite{xgboost}
-      \item Naive Bayes Regressor \cite{bayesian}
-      \item Fine-tuned GPT-2 model
-\end{itemize}
-
 \subsection{Boosted Tree Regressor}
 
 We configured the boosted tree regressor model with the training parameters listed in table \ref{table_xgboost_training_params}.
@@ -720,29 +711,83 @@ The training parameters are listed in table \ref{table_bayesian_training_params}
 
 \subsection{Fine-tuned Transformer}
 
+Transformers are a type of neural network architecture that has been widely used in natural language processing (NLP) tasks,
+such as text generation and question answering.
+They were first introduced in 2017 by paper [REF: "Attention Is All You Need"]
+and have become one of the most popular models due to their ability
+to handle long-range dependencies and process variable-length inputs.
 
-\textcolor{red}{TODO}
+One popular variant of transformers is the Generative Pre-trained Transformer 2 (GPT-2),
+which was introduced by OpenAI in 2019.
+GPT-2 is a language model that has been trained on a large corpus of text,
+and can generate coherent and fluent text that resembles human-written language.
+GPT-2 has achieved remarkable results in a wide range of natural language processing tasks, including text generation, machine translation, and question answering.
+
+In this study, we have used GPT-2 as a regressor to predict Spotify audio features from Last.fm tags. The basic idea behind this approach is to feed a string of concatenated Last.fm tags as input to the GPT-2 model, and then use the model's output as the predicted value of a specific Spotify audio feature. By training the GPT-2 model on a large dataset of Last.fm tags and corresponding Spotify audio features, 
+we aim to learn the complex relationships between these two types of data and to use this knowledge to evaluate the prediction accuracy of Spotify audio features based on Last.fm tags.
+
+To train the GPT-2 model as a regressor, we used a supervised learning approach.
+Specifically, we collected a large dataset of Last.fm tags and corresponding Spotify audio features, and used this dataset to train the GPT-2 model to predict Spotify audio features from Last.fm tags. We used a mean squared error loss function to optimize the model's performance during training, and we also employed techniques such as early stopping and learning rate scheduling to prevent overfitting and improve generalization performance.
+\textcolor{red}{Under development...}
 
 \subsection{Experiments Execution and Results}
 
-The experiments:
+Table \ref{table:experiment_results} summaries the experiment results.
+The table provides RMSE values for each experiment.
 
 
-\begin{table}[h]
+\begin{table}[h!]
       \begin{center}
       \begin{minipage}{\textwidth}
-      \caption{Experiment results. Cells values correspond to the RMSE value.}\label{experiment_results}%
-      \begin{tabular}{@{}llllll@{}}
+      \caption{Experiment results. Cells values correspond to the RMSE value.}\label{table:experiment_results}%
+      \begin{tabular}{@{}lllllll@{}}
       \toprule
-      Experiment                           & Danceability    & Acousticness    & Energy    & Valence    & Instrumentalness \\
+      M         & Input format                        & Danceab...       & Acoustic...    & Energy    & Valence    & Instrumen... \\
       \midrule
-      $Base_token_{weight}$
-      $XGBoost_Tags_{energy}$                        & 300   \\
-      XGBoost - $y_{energy}$           & 300   \\
-      XGBoost - Tokens - Weight Repeat     & 300   \\
+      Base      &                                     & 0.276            & 0.438           & 0.329     & 0.395      & 0.541          \\
+      Bayes     & 100 tags\footnotemark[1]            & 0.159            & 0.261           & 0.197     & 0.243      & 0.307          \\
+      Tree      & 100 tags                            & 0.154            & 0.257           & 0.188     & 0.240      & 0.302          \\
+      Bayes     & 1000 tags                           & 0.153            & 0.253           & 0.190     & 0.237      & 0.299          \\
+      Tree      & 1000 tags                           & 0.149            & 0.249           & 0.184     & 0.236      & 0.291          \\
+      Bayes     & 10000 tags                          & 0.152            & 0.251           & 0.189     & 0.236      & 0.297          \\
+      Tree      & 10000 tags                          & 0.148            & 0.250           & 0.181     & 0.236      & 0.290          \\
+      Bayes     & 100 tokens D\footnotemark[2]        & 0.307            & 0.307           & 0.238     & 0.281      & 0.383          \\
+      Tree      & 100 tokens D                        & 0.274            & 0.274           & 0.212     & 0.256      & 0.330          \\
+      Bayes     & 1000 tokens D                       & 0.201            & 0.315           & 0.249     & 0.248      & 0.399          \\
+      Tree      & 1000 tokens D                       & 0.173            & 0.278           & 0.215     & 0.220      & 0.339          \\
+      Bayes     & 10000 tokens D                      & 0.359            & 0.507           & 0.394     & 0.479      & 0.613          \\
+      Tree      & 10000 tokens D                      & 0.172            & 0.276           & 0.217     & 0.266      & 0.342          \\
+      Bayes     & 100 tokens O\footnotemark[3]        & 0.191            & 0.305           & 0.237     & 0.282      & 0.376          \\
+      Tree      & 100 tokens O                        & 0.179            & 0.294           & 0.225     & 0.271      & 0.350          \\
+      Bayes     & 1000 tokens O                       & 0.237            & 0.343           & 0.276     & 0.339      & 0.428          \\
+      Tree      & 1000 tokens O                       & 0.182            & 0.294           & 0.224     & 0.270      & 0.353          \\
+      Bayes     & 10000 tokens O                      & 0.237            & 0.343           & 0.276     & 0.339      & 0.428          \\
+      Tree      & 10000 tokens O                      & 0.182            & 0.294           & 0.225     & 0.267      & 0.353          \\
+      Bayes     & 100 tokens TC\footnotemark[4]       & 0.191            & 0.304           & 0.236     & 0.281      & 0.380          \\
+      Tree      & 100 tokens TC                       & 0.172            & 0.280           & 0.211     & 0.262      & 0.342          \\
+      Bayes     & 1000 tokens TC                      & 0.202            & 0.320           & 0.247     & 0.248      & 0.404          \\
+      Tree      & 1000 tokens TC                      & 0.174            & 0.282           & 0.215     & 0.220      & 0.344          \\
+      Bayes     & 10000 tokens TC                     & 0.234            & 0.341           & 0.274     & 0.321      & 0.430          \\
+      Tree      & 10000 tokens TC                     & 0.175            & 0.281           & 0.214     & 0.270      & 0.345          \\
+      .....     & .............                       & .....            & .....           & .....     & .....      & .....          \\
+      GPT       & Duplicated\footnotemark[2]          & 0.157            & ...             & ...       & ...        & ...            \\
+      GPT       & Ordered\footnotemark[3]             & 0.149            & ...             & ...       & ...        & ...            \\
+      GPT       & Tags,Counts\footnotemark[4]         & \textbf{0.145}   & ...             & ...       & ...        & ...            \\
       \botrule
       \end{tabular}
-      \footnotetext[1]{Tolerance for the stopping criteria.}
+      \footnotetext[1]{Tags in tabular format. Given $(rock, 3)$, the cell in the $rock$ column contains \verb*|3|.}
+      \footnotetext[2]{Duplicated tokens in tabular format. Tags $(rock, 3), (pop, 2)$, are converted to the \verb*|"rock, rock, rock, pop, pop"| string, 
+      which a tokenizer converts to the list of input tokens (e.g. \verb*|[101,1005,16588,1005,2531, ...]|).
+      These tokens are passed to the model in tabular format. Columns are $token_1$, $token_2$, $...$, $token_N$.}
+      \footnotetext[3]{Ordered tokens in tabular format. Tags $(rock, 3), (pop, 2)$, are converted to the \verb*|"rock, pop"| string,
+      which a tokenizer converts to the list of input tokens (e.g. \verb*|[101,1005,16588,1005,2531, ...]|).
+      These tokens are passed to the model in tabular format. Columns are $token_1$, $token_2$, $...$, $token_N$.}
+      \footnotetext[4]{Tokens in tabular format from tags and counts. Tags $(rock, 3), (pop, 2)$, are converted to the \verb*|"'rock' 3, 'pop' 2"| string,
+      which a tokenizer converts to the list of input tokens (e.g. \verb*|[101,1005,16588,1005,2531, ...]|).
+      These tokens are passed to the model in tabular format. Columns are $token_1$, $token_2$, $...$, $token_N$.}
+      \footnotetext[2]{String. Given tags $(rock, 3), (pop, 2)$, input is formatted as \verb*|"rock, rock, rock, pop, pop"|.}
+      \footnotetext[3]{String. Given tags $(rock, 3), (pop, 2)$, input is formatted as \verb*|"rock, pop"|.}
+      \footnotetext[4]{String. Given tags $(rock, 3), (pop, 2)$, input is formatted as \verb*|"'rock' 3, 'pop' 2"|.}
       \end{minipage}
       \end{center}
 \end{table}
