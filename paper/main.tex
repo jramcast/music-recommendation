@@ -424,8 +424,14 @@ we explored the data to verify that the distribution of the Spotify audio featur
 was comparable to other Spotify datasets.
 In particular, we verified that the distribution of the features,
 described in Table \ref{table:audio-features-stats} and Figure \ref{fig:audio-features-distribution},
-was comparable to the distribution of the \emph{Spotify Audio Features} Kaggle dataset
+was comparable to the distribution of the \emph{Spotify Audio Features} Kaggle dataset.
+This dataset contains more tha 116,000 unique tracks, and includes audio features for each track.
+Our dataset present similar $\mu$ and $\sigma$ values as the Spotify Audio Features Kaggle dataset,
+as illustrated in Table \ref{table:audio-features-stats-kaggle} and Figure \ref{fig:audio-features-distribution-kaggle}.
 \footnote[6]{https://www.kaggle.com/datasets/tomigelo/spotify-audio-features}.
+
+% Another dataset created from the Spotify API and published to Kaggle:
+% https://www.kaggle.com/datasets/andrewmvd/spotify-playlists
 
 \begin{table}[h!]
       \begin{center}
@@ -435,11 +441,29 @@ was comparable to the distribution of the \emph{Spotify Audio Features} Kaggle d
       \toprule
       Feature           & $\mu$ & $\sigma$ \\
       \midrule
-      Danceability      & 0.599  & 0.193  \\
-      Energy            & 0.631  & 0.233  \\
-      Acousticness      & 0.221  & 0.302  \\
-      Instrumentalness  & 0.514  & 0.382  \\
-      Valence           & 0.435  & 0.279  \\
+      Danceability      & 0.60  & 0.19  \\
+      Energy            & 0.63  & 0.23  \\
+      Acousticness      & 0.22  & 0.30  \\
+      Instrumentalness  & 0.51  & 0.38  \\
+      Valence           & 0.44  & 0.28  \\
+      \botrule
+      \end{tabular}
+      \end{minipage}
+      \end{center}
+\end{table}
+\begin{table}[h!]
+      \begin{center}
+      \begin{minipage}{\textwidth}
+      \caption{Audio features description of \emph{Spotify Audio Features} Kaggle dataset}\label{table:audio-features-stats-kaggle}%
+      \begin{tabular}{@{}lll@{}}
+      \toprule
+      Feature           & $\mu$ & $\sigma$ \\
+      \midrule
+      Danceability      & 0.58   & 0.19  \\
+      Energy            & 0.57  & 0.26  \\
+      Acousticness      & 0.34  & 0.25  \\
+      Instrumentalness  & 0.22  & 0.36  \\
+      Valence           & 0.44  & 0.26  \\
       \botrule
       \end{tabular}
       \end{minipage}
@@ -449,8 +473,15 @@ was comparable to the distribution of the \emph{Spotify Audio Features} Kaggle d
 \begin{figure}[h!]
       \centering
       \includegraphics[width=\textwidth]{images/features-distribution.png}
-      \caption{Distribution of audio features. These densities are similar to the values shown by the \emph{Spotify Audio Features} Kaggle dataset.}
+      \caption{Distribution of audio features in our single-user dataset.}
       \label{fig:audio-features-distribution}
+\end{figure}
+
+\begin{figure}[h!]
+      \centering
+      \includegraphics[width=\textwidth]{images/feature-distribution-kaggle.png}
+      \caption{Distribution of audio features in the \emph{Spotify Audio Features} Kaggle dataset.}
+      \label{fig:audio-features-distribution-kaggle}
 \end{figure}
 
 \subsection{Filtering Missing Values}
@@ -723,7 +754,7 @@ GPT-2 is a language model that has been trained on a large corpus of text,
 and can generate coherent and fluent text that resembles human-written language.
 GPT-2 has achieved remarkable results in a wide range of natural language processing tasks, including text generation, machine translation, and question answering.
 
-In this study, we have used GPT-2 as a regressor to predict Spotify audio features from Last.fm tags. The basic idea behind this approach is to feed a string of concatenated Last.fm tags as input to the GPT-2 model, and then use the model's output as the predicted value of a specific Spotify audio feature. By training the GPT-2 model on a large dataset of Last.fm tags and corresponding Spotify audio features, 
+In this study, we have used GPT-2 as a regressor to predict Spotify audio features from Last.fm tags. The basic idea behind this approach is to feed a string of concatenated Last.fm tags as input to the GPT-2 model, and then use the model's output as the predicted value of a specific Spotify audio feature. By training the GPT-2 model on a large dataset of Last.fm tags and corresponding Spotify audio features,
 we aim to learn the complex relationships between these two types of data and to use this knowledge to evaluate the prediction accuracy of Spotify audio features based on Last.fm tags.
 
 To train the GPT-2 model as a regressor, we used a supervised learning approach.
@@ -742,41 +773,44 @@ The table provides RMSE values for each experiment.
       \caption{Experiment results. Cells values correspond to the RMSE value.}\label{table:experiment_results}%
       \begin{tabular}{@{}lllllll@{}}
       \toprule
-      M         & Input format                        & Danceab...       & Acoustic...    & Energy    & Valence    & Instrumen... \\
+      M         & Input format                        & Danceab...       & Acoustic...    & Energy          & Valence         & Instrumen... \\
       \midrule
-      Base      &                                     & 0.276            & 0.438           & 0.329     & 0.395      & 0.541          \\
-      Bayes     & 100 tags\footnotemark[1]            & 0.159            & 0.261           & 0.197     & 0.243      & 0.307          \\
-      Tree      & 100 tags                            & 0.154            & 0.257           & 0.188     & 0.240      & 0.302          \\
-      Bayes     & 1000 tags                           & 0.153            & 0.253           & 0.190     & 0.237      & 0.299          \\
-      Tree      & 1000 tags                           & 0.149            & 0.249           & 0.184     & 0.236      & 0.291          \\
-      Bayes     & 10000 tags                          & 0.152            & 0.251           & 0.189     & 0.236      & 0.297          \\
-      Tree      & 10000 tags                          & 0.148            & 0.250           & 0.181     & 0.236      & 0.290          \\
-      Bayes     & 100 tokens D\footnotemark[2]        & 0.307            & 0.307           & 0.238     & 0.281      & 0.383          \\
-      Tree      & 100 tokens D                        & 0.274            & 0.274           & 0.212     & 0.256      & 0.330          \\
-      Bayes     & 1000 tokens D                       & 0.201            & 0.315           & 0.249     & 0.248      & 0.399          \\
-      Tree      & 1000 tokens D                       & 0.173            & 0.278           & 0.215     & 0.220      & 0.339          \\
-      Bayes     & 10000 tokens D                      & 0.359            & 0.507           & 0.394     & 0.479      & 0.613          \\
-      Tree      & 10000 tokens D                      & 0.172            & 0.276           & 0.217     & 0.266      & 0.342          \\
-      Bayes     & 100 tokens O\footnotemark[3]        & 0.191            & 0.305           & 0.237     & 0.282      & 0.376          \\
-      Tree      & 100 tokens O                        & 0.179            & 0.294           & 0.225     & 0.271      & 0.350          \\
-      Bayes     & 1000 tokens O                       & 0.237            & 0.343           & 0.276     & 0.339      & 0.428          \\
-      Tree      & 1000 tokens O                       & 0.182            & 0.294           & 0.224     & 0.270      & 0.353          \\
-      Bayes     & 10000 tokens O                      & 0.237            & 0.343           & 0.276     & 0.339      & 0.428          \\
-      Tree      & 10000 tokens O                      & 0.182            & 0.294           & 0.225     & 0.267      & 0.353          \\
-      Bayes     & 100 tokens TC\footnotemark[4]       & 0.191            & 0.304           & 0.236     & 0.281      & 0.380          \\
-      Tree      & 100 tokens TC                       & 0.172            & 0.280           & 0.211     & 0.262      & 0.342          \\
-      Bayes     & 1000 tokens TC                      & 0.202            & 0.320           & 0.247     & 0.248      & 0.404          \\
-      Tree      & 1000 tokens TC                      & 0.174            & 0.282           & 0.215     & 0.220      & 0.344          \\
-      Bayes     & 10000 tokens TC                     & 0.234            & 0.341           & 0.274     & 0.321      & 0.430          \\
-      Tree      & 10000 tokens TC                     & 0.175            & 0.281           & 0.214     & 0.270      & 0.345          \\
-      .....     & .............                       & .....            & .....           & .....     & .....      & .....          \\
-      GPT       & Duplicated\footnotemark[2]          & 0.157            & ...             & ...       & ...        & ...            \\
-      GPT       & Ordered\footnotemark[3]             & 0.149            & ...             & ...       & ...        & ...            \\
-      GPT       & Tags,Counts\footnotemark[4]         & \textbf{0.145}   & ...             & ...       & ...        & ...            \\
+      Base      &                                     & 0.276            & 0.438           & 0.329          & 0.395           & 0.541          \\
+      \midrule
+      Bayes     & 100 tags\footnotemark[1]            & 0.159            & 0.261           & 0.197          & 0.243           & 0.307          \\
+      Bayes     & 1000 tags                           & 0.153            & 0.253           & 0.190          & 0.237           & 0.299          \\
+      Bayes     & 10000 tags                          &\textbf{0.152}    &\textbf{0.251}   &\textbf{0.189}  &\textbf{0.236}   &\textbf{0.297}  \\
+      Bayes     & 100 tokens D\footnotemark[2]        & 0.307            & 0.307           & 0.238          & 0.281           & 0.383          \\
+      Bayes     & 10000 tokens D                      & 0.359            & 0.507           & 0.394          & 0.479           & 0.613          \\
+      Bayes     & 1000 tokens D                       & 0.201            & 0.315           & 0.249          & 0.248           & 0.399          \\
+      Bayes     & 100 tokens O\footnotemark[3]        & 0.191            & 0.305           & 0.237          & 0.282           & 0.376          \\
+      Bayes     & 1000 tokens O                       & 0.237            & 0.343           & 0.276          & 0.339           & 0.428          \\
+      Bayes     & 10000 tokens O                      & 0.237            & 0.343           & 0.276          & 0.339           & 0.428          \\
+      Bayes     & 100 tokens TC\footnotemark[4]       & 0.191            & 0.304           & 0.236          & 0.281           & 0.380          \\
+      Bayes     & 1000 tokens TC                      & 0.202            & 0.320           & 0.247          & 0.248           & 0.404          \\
+      Bayes     & 10000 tokens TC                     & 0.234            & 0.341           & 0.274          & 0.321           & 0.430          \\
+      \midrule
+      Tree      & 100 tags                            & 0.154            & 0.257           & 0.188          & 0.240           & 0.302          \\
+      Tree      & 1000 tags                           & 0.149            &\textbf{0.249}   & 0.184          & 0.236           & 0.291          \\
+      Tree      & 10000 tags                          &\textbf{0.148}    & 0.250           &\textbf{0.181}  &\textbf{0.235}   &\textbf{0.290}  \\
+      Tree      & 100 tokens D                        & 0.274            & 0.274           & 0.212          & 0.256           & 0.330          \\
+      Tree      & 1000 tokens D                       & 0.173            & 0.278           & 0.215          & 0.220           & 0.339          \\
+      Tree      & 10000 tokens D                      & 0.172            & 0.276           & 0.217          & 0.266           & 0.342          \\
+      Tree      & 100 tokens O                        & 0.179            & 0.294           & 0.225          & 0.271           & 0.350          \\
+      Tree      & 1000 tokens O                       & 0.182            & 0.294           & 0.224          & 0.270           & 0.353          \\
+      Tree      & 10000 tokens O                      & 0.182            & 0.294           & 0.225          & 0.267           & 0.353          \\
+      Tree      & 100 tokens TC                       & 0.172            & 0.280           & 0.211          & 0.262           & 0.342          \\
+      Tree      & 1000 tokens TC                      & 0.174            & 0.282           & 0.215          & 0.220           & 0.344          \\
+      Tree      & 10000 tokens TC                     & 0.175            & 0.281           & 0.214          & 0.270           & 0.345          \\
+      \midrule
+      GPT       & Duplicated\footnotemark[5]          & 0.157            & ...             & ...            & ...             & ...            \\
+      GPT       & Ordered\footnotemark[6]             & 0.149            & ...             & ...            & ...             & ...            \\
+      GPT       & Tags,Counts\footnotemark[7]         & \textbf{0.145}   & ...             & ...            & ...             & ...            \\
+
       \botrule
       \end{tabular}
       \footnotetext[1]{Tags in tabular format. Given $(rock, 3)$, the cell in the $rock$ column contains \verb*|3|.}
-      \footnotetext[2]{Duplicated tokens in tabular format. Tags $(rock, 3), (pop, 2)$, are converted to the \verb*|"rock, rock, rock, pop, pop"| string, 
+      \footnotetext[2]{Duplicated tokens in tabular format. Tags $(rock, 3), (pop, 2)$, are converted to the \verb*|"rock, rock, rock, pop, pop"| string,
       which a tokenizer converts to the list of input tokens (e.g. \verb*|[101,1005,16588,1005,2531, ...]|).
       These tokens are passed to the model in tabular format. Columns are $token_1$, $token_2$, $...$, $token_N$.}
       \footnotetext[3]{Ordered tokens in tabular format. Tags $(rock, 3), (pop, 2)$, are converted to the \verb*|"rock, pop"| string,
@@ -785,9 +819,9 @@ The table provides RMSE values for each experiment.
       \footnotetext[4]{Tokens in tabular format from tags and counts. Tags $(rock, 3), (pop, 2)$, are converted to the \verb*|"'rock' 3, 'pop' 2"| string,
       which a tokenizer converts to the list of input tokens (e.g. \verb*|[101,1005,16588,1005,2531, ...]|).
       These tokens are passed to the model in tabular format. Columns are $token_1$, $token_2$, $...$, $token_N$.}
-      \footnotetext[2]{String. Given tags $(rock, 3), (pop, 2)$, input is formatted as \verb*|"rock, rock, rock, pop, pop"|.}
-      \footnotetext[3]{String. Given tags $(rock, 3), (pop, 2)$, input is formatted as \verb*|"rock, pop"|.}
-      \footnotetext[4]{String. Given tags $(rock, 3), (pop, 2)$, input is formatted as \verb*|"'rock' 3, 'pop' 2"|.}
+      \footnotetext[5]{String. Given tags $(rock, 3), (pop, 2)$, input is formatted as \verb*|"rock, rock, rock, pop, pop"|.}
+      \footnotetext[6]{String. Given tags $(rock, 3), (pop, 2)$, input is formatted as \verb*|"rock, pop"|.}
+      \footnotetext[7]{String. Given tags $(rock, 3), (pop, 2)$, input is formatted as \verb*|"'rock' 3, 'pop' 2"|.}
       \end{minipage}
       \end{center}
 \end{table}
