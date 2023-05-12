@@ -1,0 +1,12 @@
+{
+    "epoch": 10.0,
+    "eval_loss": 0.055350109934806824,
+    "eval_mae": 0.1916785091161728,
+    "eval_mse": 0.05535010248422623,
+    "eval_r2": 0.28136996364588973,
+    "eval_rmse": 0.23526602983474731,
+    "eval_runtime": 5.3231,
+    "eval_samples_per_second": 508.164,
+    "eval_steps_per_second": 50.91,
+    "test_samples": 2164
+}
