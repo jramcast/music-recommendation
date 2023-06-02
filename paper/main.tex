@@ -149,7 +149,7 @@ Associated metadata, such as editorial information, lyrics, or user-generated co
 However, metadata can be available as images of videos, for example, when analyzing album artwork, or music videos.
 
 Depending on the specific MIR application, researchers or practitioners expect different output values.
-For example, an application that extracts audio features might return values for the tempo, the key, or the sample rate.
+Applications that extract audio features typically return values related to the tempo, the key, or the sample rate, among others.
 In more complex applications, where, for example, machine learning is used,
 applications might return the estimated emotion that a track produces on a listener, or the predicted music genre of a particular track.
 
@@ -448,6 +448,11 @@ After filtering tracks that were missing Last.fm tags or Spotify audio features,
 the dataset resulted in 14,009 samples.
 Compared to the original 20,000 unique tracks included in the listening history, approximately 6,000 songs were missing either Spotify or Last.fm data.
 
+The mapping between Last.fm and Spotify tracks is performed on an artist-track basis.
+The artist and track name extracted from Last.fm are used as parameters of the Spotify Search API.
+The Last.fm API provides a unique identifier, the \emph{MusicBrainz} ID.
+The Spotify API, however, does not provide this value.
+
 \subsection{Dataset Comparison}
 
 Considering that the data was gathered from a single user,
@@ -524,7 +529,7 @@ We trained commonly used machine learning models to predict Spotify audio featur
 \begin{itemize}
       \item Boosted tree regressor \cite{xgboost}
       \item Naive Bayes Regressor \cite{bayesian}
-      \item Fine-tuned GPT-2 model
+      \item Fine-tuned GPT-2 model \cite{radford2019language}
 \end{itemize}
 
 The preceding models require specific input formats.
@@ -547,6 +552,14 @@ A cell is 0 if a tag is missing for a track.
 Counting the total amount of Last.fm tags in the user collection resulted, initially, in more than five million tags.
 We quickly confirmed that building a tabular data set, in which every row contains millions of columns (Last.fm tags)
 was doable, but presented scalability problems.
+In addition to scalability limitations, classic machine learning models might not take advantage of using the full dataset.
+These models might even perform poorly if too many input features are provided.
+The reason for this is spurious relations or redundancy  between input features.
+Models might find relations that are not real, and latent, redundant variables might be accountable multiple times, which creates a bias in the output.
+Feature subject selection aims at solving these problems.
+
+% For example, a Bayesian model might provide low-quality results of provided with variables that are not conditionally independent.
+
 Therefore, we reduced the number of tags by picking a subset of the most relevant tags.
 
 The reduction algorithm uses a basic data aggregation algorightm: group the data by tag, aggregate by summing the \emph{count} values for each tag,
@@ -601,7 +614,21 @@ The sparsity of a matrix is the number of zero-valued elements divided by the to
 \subsubsection{Tabular Tokens}
 
 Tags are converted to text tokens. Columns represent token positions, and cells contain the token at a particular position, for a track.
-To tokenize tags, we have used the GTP2 tokenizer.
+To tokenize tags, we have used the GTP-2 tokenizer.
+
+Tokenizers are crucial elements in the preprocessing of text data.
+A tokenizer dissects a piece of text into smaller units, called tokens.
+These tokens can be words, subwords, or even syllables or characters.
+
+When breaking down the text into tokens, the tokenizer assigns a unique numerical identifier to each token.
+This IDs are based on the vocabulary that the tokenizer has been trained on.
+For example, when the tokenizer processes the \verb|"Hello world"| string, the Hello token might be assigned to ID \verb|123|
+and the world token might be assigned to ID \verb|34534|.
+The result of tokenizing \verb|Hello world| would be \verb|[123, 34534]|.
+
+Note that, although tokenizers are most commonly used in combination with transformer models, in this paper we test the possiblity of using theorem
+to preproccess data passed to Bayesian an Tree models.
+
 Because the tokenizer requires a string as input, we have converted the set of tags for each track into a string.
 To \emph{stringify} the tags, we have concatenated tags with multiple strategies:
 
@@ -913,6 +940,10 @@ we can gain new insights into the complex relationship between perception and au
 Our approach also presents limitations.
 One limitation is the assumption of a strong relationship between Last.fm tags and Spotify features, which may not be true in all cases.
 Future work could explore other sources of input values, possibly related to the user context, to improve the accuracy of the predictions.
+
+Track mapping between Last.fm and Spotify is another opportunity for research and improvement.
+Although Last.fm provides the MusicBrainz unique identifier, but Spotify does not provide this value.
+The mapping was performed by using the track artist and name, but this approach resulted on about 30\% of the tracks not found on Spotify.
 
 
 
