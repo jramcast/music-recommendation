@@ -185,6 +185,66 @@ and as a result they get the predicted audio features, the closest tracks to tho
 
 In the remainder of the article, we explain the data gathering and preparation process, as well as the data input formats and varios models.
 We will explore various models for the same track and provide insights on how accurately the prediction can be, by using only Last.fm tags.
+\textcolor{red}{UNDER DEVELOPMENT}
+
+\section{Data Sources}
+
+\subsection{Last.fm Tags}
+
+Last.fm is an online music service for users to keep track of their music listening habits.
+Last.fm is also an online community where users tag artists, albums, and tracks, according their own taste and perception.
+
+Users apply these tags to
+categorize music from their own perspective, which
+means that tags do not fit into any structured ontology
+or data model.
+Tags can refer to any aspect that users consider as a valid descriptor, such as genre,
+emotion, or user listening context.
+
+For nearly two decades, users have been contributing to Last.fm by tagging tracks, albums, and artists with text labels.
+Although many of these descriptions are single-worded (e.g \emph{rock}, \emph{dance}, or \emph{happy}),
+users can also use short sentences to define a song, such as \emph{I like this track}, or \emph{on the beach}.
+
+\subsection{Spotify Audio Features}
+
+Spotify, one of the leaders in the music streaming industry, provides information about each track in their catalog via the Spotify developers API.
+One of the API endpoints is the audio features endpoint.
+
+The Spotify audio features are numerical values that represent high-level audio information computed from a specific
+track. These values characterize a track, musically speaking,
+by measuring musical aspects that, in many of these features, are related to the perspective of the user recommendation factors.
+For example, a danceability value of 0.95 means
+that a particular song is highly suitable for dancing.
+
+The features provided by the Spotify API are listed in
+Table \ref{table:spotify-features}.
+The reader can find further details about each feature in the Spotify API documentation\footnote[5]{
+      \url{https://developer.spotify.com/documentation/web-api/reference/\#/operations/get-audio-features}
+}.
+
+\begin{table}[h!]
+      \centering
+      \caption{Spotify audio features. These features provide high-level musical information about a track.} \label{table:spotify-features}
+      \begin{tabular}{p{0.3\linewidth}p{0.6\linewidth}}
+          \toprule
+          \bfseries \textbf{Feature name} & \textbf{Description} \\
+          \midrule
+          \textbf{acousticness} & The track is acoustic. From 0 to 1 \\
+          \textbf{danceability} & The track encourages (or is adequate for) dancing. From 0 to 1 \\
+          \textbf{duration\_ms}  &  Duration in milliseconds \\
+          \textbf{energy}  &  The track is perceived as energetic. From 0 to 1\\
+          \textbf{instrumentalness}  &  The track is instrumental. From 0 to 1 \\
+          \textbf{key}  &  Key categories encoded as integers. From C (0) to 11 \\
+          \textbf{liveness}  &  The audience is audible. From 0 to 1\\
+          \textbf{loudness}  &  In decibels. From -60 to 0 \\
+          \textbf{mode}  & Major (1) or minor (0) \\
+          \textbf{speechiness}  & Does the track contain speeches? From 0 to 1 \\
+          \textbf{tempo}  & In beats per minute (BPM) \\
+          \textbf{valence} & How happy is the track (BPM). From 0 to 1 \\
+          \bottomrule
+      \end{tabular}
+  \end{table}
+
 
 \section{Related Research}
 
@@ -231,7 +291,7 @@ In general, these studies confirm the possibility of extracting knowledge from L
 
 \subsection{Spotify Audio Features}
 
-% Spotify, one of the leaders in the music streaming industry...
+
 
 The Spotify audio features have been used in multiple studies.
 Historically, these features were called the \emph{Echo Nest audio features}.
@@ -263,6 +323,7 @@ In particular, they identify that the energy, valence, and acousticness values, 
 are highly relevant for emotion classification.
 They also achieve better performance on MER models by using their own top-100 features, and they determine that,
 although these three Spotify features are relevant in terms of characterizing emotion, more features are needed for MER.
+% In reality, energy is not exactly arousal, but serves as its surrogate.
 
 Publicly available datasets of Spotify audio features can be found online,
 as a result of open-source and research communities collecting data from the Spotify API and publishing the results.
@@ -348,24 +409,6 @@ Given the objective of our experiments,
 we created a dataset of Last.fm tags and Spotify audio features, indexed by track, by following these steps:
 
 
-
-\subsection{Last.fm Tags}
-
-Last.fm is an online music service for users to keep track of their music listening habits.
-Last.fm is also an online community where users tag artists, albums, and tracks, according their own taste and perception.
-
-Users apply these tags to
-categorize music from their own perspective, which
-means that tags do not fit into any structured ontology
-or data model.
-Tags can refer to any aspect that users consider as a valid descriptor, such as genre,
-emotion, or user listenting context.
-
-For nearly two decades, users have been contributing to Last.fm by tagging tracks, albums, and artists with text labels.
-Although many of these descriptions are single-worded (e.g \emph{rock}, \emph{dance}, or \emph{happy}),
-users can also use short sentences to define a song, such as \emph{I like this track}, or \emph{on the beach}.
-
-
 \subsubsection{Last.fm Downloaded Data}
 
 Last.fm uses the term \emph{scrobble} to refer to the action of playing a track at a specific moment in time.
@@ -410,43 +453,6 @@ Therefore, the user has listened to each song, approximately, 4.5 times on avera
 After gathering the listening history and track tags from Last.fm, and identifying the unique
 tracks that represent the user music collection, we
 collected Spotify audio features for each one of those tracks.
-
-The Spotify audio features are numerical values that represent high-level audio information computed from a specific
-track. These values characterize a track, musically speaking,
-by measuring relevant musical aspects.
-For example, a danceability value of 0.95 means
-that a particular song is highly suitable for dancing.
-
-The features provided by the Spotify API are listed in
-Table \ref{table:spotify-features}.
-The reader can find further details about each feature in the Spotify API documentation\footnote[5]{
-      \url{https://developer.spotify.com/documentation/web-api/reference/\#/operations/get-audio-features}
-}.
-
-
-\begin{table}[h!]
-      \centering
-      \caption{Spotify audio features. These features provide high-level musical information about a track.} \label{table:spotify-features}
-      \begin{tabular}{p{0.3\linewidth}p{0.6\linewidth}}
-          \toprule
-          \bfseries \textbf{Feature name} & \textbf{Description} \\
-          \midrule
-          \textbf{acousticness} & The track is acoustic. From 0 to 1 \\
-          \textbf{danceability} & The track encourages (or is adequate for) dancing. From 0 to 1 \\
-          \textbf{duration\_ms}  &  Duration in milliseconds \\
-          \textbf{energy}  &  The track is perceived as energetic. From 0 to 1\\
-          \textbf{instrumentalness}  &  The track is instrumental. From 0 to 1 \\
-          \textbf{key}  &  Key categories encoded as integers. From C (0) to 11 \\
-          \textbf{liveness}  &  The audience is audible. From 0 to 1\\
-          \textbf{loudness}  &  In decibels. From -60 to 0 \\
-          \textbf{mode}  & Major (1) or minor (0) \\
-          \textbf{speechiness}  & Does the track contain speeches? From 0 to 1 \\
-          \textbf{tempo}  & In beats per minute (BPM) \\
-          \textbf{valence} & How happy is the track (BPM). From 0 to 1 \\
-          \bottomrule
-      \end{tabular}
-  \end{table}
-
 
 \subsection{Filtering Missing Values}
 
