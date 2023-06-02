@@ -138,40 +138,46 @@
 
 Music information retrieval (MIR) is an interdisciplinary research field that encompasses the extraction,
 processing, and knowledge discovery of information contained in music.
-MIR research intersects with other fields, such as computer science, signal processing, musicology, and sociology.
-The field covers applications in recommendation systems, music classification,
+MIR research covers a wide range of applications and intersects with other areas, such as computer science, signal processing, musicology, and sociology.
+Examples of MIR applications are recommendation systems, music classification,
 music source separation, and music generation, among others \cite{ramirez2020machine}.
 
 MIR applications often attempt to extract information from the music audio signal,
-but analyzing associated metadata is also a common practice.
-Audio signals are typically preprocessed and transformed into intermediate formats, such as frequency-based signal representations or hand-crafted audio features.
-Associated metadata, such as editorial information, lyrics, or user-generated content is usually in text format.
-However, metadata can be available as images of videos, for example, when analyzing album artwork, or music videos.
+although analyzing associated metadata is also a common practice.
+Audio signals are typically preprocessed and transformed into intermediate formats, such as frequency-based signal representations (e.g. spectrograms),
+and sets of hand-crafted audio features, which are typically engineered by using domain knowledge (e.g. MFCC, rhythm, or tonal descriptors).
+
+The metadata associated to a music piece is available in multiple formats.
+Editorial information or lyrics, for example, are mostly available in text format.
+The ability to process images or videos is also required, for example, for analyzing album artwork, or music videos.
 
 Depending on the specific MIR application, researchers or practitioners expect different output values.
-Applications that extract audio features typically return values related to the tempo, the key, or the sample rate, among others.
-In more complex applications, where, for example, machine learning is used,
-applications might return the estimated emotion that a track produces on a listener, or the predicted music genre of a particular track.
+Applications that extract audio features typically return audio descriptors, namely values related to the tempo, the key, or the sample rate, among others.
+Open source libraries such as \emph{Librosa}\footnote[1]{https://librosa.org/} 
+and \emph{Essentia}\footnote[2]{https://essentia.upf.edu/index.html} offer methods to extract these values.
+Other applications might produce higher-level values, for example, by using machine learning techniques
+that estimate the emotion that a track induces, or the music genre of this track.
 
 Among potentially useful input and output values, research has proved Spotify audio features and Last.fm tags to be significant values to characterize music.
-Spotify audio features capture high-level information about the music signal.
-Examples of these values are energy, danceability, or valence, among others.
-Last.fm tags are text labels that users associate to particular tracks, artists or albums in the Last.fm website.
+Spotify audio features capture high-level information about the music signal,
+such as energy, danceability, or valence, among others.
+Last.fm tags are text labels that users associate to songs, artists, and albums via the Last.fm social platform.
 
-Both types of values have been used as input data mostly for classification tasks, such as music genre recognition,
-where, given Spotify features or Last.fm tasks, the model estimates the music genres of a particular track.
-Previous studies, however, have not used these values as target outputs, to the best of our knowledge.
-In particular, the focus of this article is on predicting Spotify audio features, given a set of Last.fm tags.
+Both Spotify audio features and Last.fm tags have been used as input data mostly for classification tasks, such as music genre recognition,
+where, given a set of Spotify audio features and/or Last.fm tags, the model estimates the music genre(s) of a particular track.
+Previous studies, however, have not experimented with these values as target outputs, to the best of our knowledge.
+This unexplored aspect reveals what we believe is a potential research opportunity in music analysis and recommendation.
 
-By predicting Spotify audio features, we explore the relationship between subjective perception and concrete musical features.
-This approach might help to identify patterns and hidden correlations between how music is percevied, consumed and discovered.
+In particular, this article focuses on predicting Spotify audio features, given a set of Last.fm tags.
+By predicting Spotify audio features, we explore the relationship between the subjective perception captured by Last.fm tags, and the concrete musical features that Spotify computes.
+This approach might help to identify patterns and hidden correlations between how music is perceived, consumed, and discovered.
 
-Additionally, predicted audio features could be used in recommendation systems to provide users with explainable recommendations.
-Music recommendations are tipically dificult to interpret from the perspective of the listener.
+Additionally, the predicted Spotify audio features could be used in recommendation systems to provide users with explainable recommendations.
+Music recommendations are typically difficult to interpret from the perspective of the listener.
 Users often get recommendations without meaningful explanations or justifications.
-Therefore, by using predicted Spotify features as basis for recommendation, we can explain users why the algorithm suggests a particular track.
+By predicting Spotify features as an intermediate step in the recommendation pipeline, we could use these features to explain users why the algorithm suggests a particular track.
 This process could be part of an explainable recommendation pipeline, where users enter a set of tags,
-and they receive the predicted audio features, the closest tracks to those features, and the distance values between each track and the predicted features.
+and as a result they get the predicted audio features, the closest tracks to those features (as recommended tracks), and the distance values between each track and the predicted features.
 
 % The idea is, given a set of tags, to predict a set of audio features that a hypothetic track would exhibit.
 % Then, we could build a track selection algorithm that selects actual tracks that are the closest to the predicted audio features.
@@ -182,16 +188,22 @@ We will explore various models for the same track and provide insights on how ac
 
 \section{Related Research}
 
-\subsubsection{Last.fm Tags}
+\subsection{Last.fm Tags}
 
 In the last decade, researchers have studied the use of Last.fm tags in classification and regression tasks.
 Last.fm tags have been a popular source of metadata for MIR tasks,
-because they potentionally contain subjective information related to the genre, mood, and style of music,
+because they potentially contain subjective information related to the genre, mood, and style of music,
 and might be used to characterize certain features of a music piece.
-Several studies have used Last.fm to predict music sentiment or mood, and to predict audio features.
-
-Additionally, Last.fm tags constitute a useful source of input knownledge when the audio signal is not available,
+Additionally, Last.fm tags constitute a useful source of input knowledge when the audio signal is not available,
 for example, due to copyright limitations.
+
+
+Several studies have used Last.fm to predict music sentiment, mood, and even audio features.
+For example, Laurier et al. analyze how Last.fm tags categorize mood.
+In their study, they created a semantic mood space based on Last.fm tags \cite{laurier2009music}.
+
+% This study predicts Spotify features from Predictor Variables – Determinants of Music-Selection Behavior
+% https://www.static.tu.berlin/fileadmin/www/10002020/Dokumente/Abschlussarbeiten/Karnop_MasA.pdf
 
 % == Excerpt taken from one of our references vvvvvvv
 % For example, tags such as "acoustic", "live", and "instrumental" have been
@@ -199,16 +211,13 @@ for example, due to copyright limitations.
 % Similarly, tags such as "happy," "sad," and "angry" have been used
 % to predict the valence and arousal of a track.
 
-For example, Laurier et al. analyze how Last.fm tags categorize mood.
-In their study, they created a semantic mood space based on Last.fm tags \cite{laurier2009music}.
-
 {\c{C}}ano and Morisio discuss how they create a dataset of music
 lyrics annotated with Last.fm tags.
 In the creation process, they conclude that Last.fm tags are mostly related to music genre
 and positive moods \cite{ccano2017music}.
 
 In a similar direction, Bod{\'o} and Szil{\'a}gyi generate a dataset for lyrics genre classification
-by combining the Last.fm with MusicBrainz data \cite{bodo2018connecting}.
+by combining the Last.fm with \emph{MusicBrainz} data \cite{bodo2018connecting}.
 MusicBrainz is an online database of music editorial metadata\footnote[1]{https://musicbrainz.org/}.
 
 So far, The \emph{Last.fm dataset} has been the most widely used Last.fm dataset\footnotemark[2] in research.
@@ -220,7 +229,7 @@ Dataset, available at: http://millionsongdataset.com/lastfm.}
 In general, these studies confirm the possibility of extracting knowledge from Last.fm tags.
 
 
-\subsubsection{Spotify Audio Features}
+\subsection{Spotify Audio Features}
 
 % Spotify, one of the leaders in the music streaming industry...
 
