@@ -497,7 +497,7 @@ was comparable to larger, and possibly more balanced, Spotify datasets.
 In particular, we verified that the distribution of the features,
 described in Table \ref{table:audio-features-stats} and Figure \ref{fig:audio-features-distribution},
 was comparable to the distribution of the Spotify Audio Features Kaggle dataset.
-Our dataset, which we call \emph{Jimmydj2000 Single-user} dataset, presents mean ($\mu$) and standard deviation($\sigma$) values that are comparable to the same values of the Spotify Audio Features Kaggle dataset,
+Our dataset, which we call \emph{Last.fm Single-user} dataset, presents mean ($\mu$) and standard deviation($\sigma$) values that are comparable to the same values of the Spotify Audio Features Kaggle dataset,
 as illustrated in Table \ref{table:audio-features-stats-kaggle}
 and Figure \ref{fig:audio-features-distribution-kaggle}.
 
@@ -506,7 +506,7 @@ and Figure \ref{fig:audio-features-distribution-kaggle}.
 
 \begin{table}[!ht]
       \begin{minipage}{.5\linewidth}
-      \caption{Audio features description of the Jimmydj2000 Single-user dataset.}\label{table:audio-features-stats}
+      \caption{Audio features description of the Last.fm Single-user dataset.}\label{table:audio-features-stats}
             \centering
                   \begin{tabular}{@{}lll@{}}
                   \toprule
@@ -546,7 +546,7 @@ and Figure \ref{fig:audio-features-distribution-kaggle}.
 \begin{figure}[h!]
       \centering
       \includegraphics[width=\textwidth]{images/features-distribution.png}
-      \caption{Distribution of audio features in the Jimmydj2000 Single-user dataset.}
+      \caption{Distribution of audio features in the Last.fm Single-user dataset.}
       \label{fig:audio-features-distribution}
 \end{figure}
 
@@ -562,18 +562,40 @@ and Figure \ref{fig:audio-features-distribution-kaggle}.
 
 \section{Experiments}
 
-We trained three commonly used machine learning models to predict Spotify audio features from Last.fm tags by using the
+We trained three commonly used machine learning models to predict Spotify audio features from Last.fm tags by using the Last.fm Single-user dataset.
+Considering that predicting the audio feature values is a regression problem, we tested the following models:
 
 \begin{itemize}
       \item Boosted tree regressor \cite{xgboost}
-      \item Naive Bayes Regressor \cite{bayesian}
-      \item Fine-tuned GPT-2 model \cite{radford2019language}
+      \item Bayesian Ridge Regressor \cite{bayesian}
+      \item GPT-2 model (fine-tuning) \cite{radford2019language}
 \end{itemize}
+
+
+The \emph{Boosted tree regressor} is a specific implementation of the \emph{XGBoost} algorithm for regression tasks.
+This algorithm is an ensemble learning technique that combines simple multiple decision trees to
+create a stronger predictive model.
+This model has proved to be a powerful solution for classification and regression problems on high-dimensional, structured data.
+\textcolor{red}{REF}
+
+The \emph{Bayesian Ridge regressor} is a regression model that combines the principles of Bayesian statistics with ridge regression.
+Compared to linear regression, which assumes that the model estimated parameters have a deterministic value, the Bayesian Ridge regressor treats the model coefficients as variables with a prior distribution.
+By incorporating prior distributions into the learning process, the model is able to capture uncertainty.
+The ridge regression technique enables the model to handle noisy, collinear, structured data.
+
+The \emph{GTP-2} model is a transformer model.
+Transformers are a type of neural network architecture that has been widely used in natural language processing (NLP) tasks,
+such as text generation and question answering.
+GPT-2 has been trained on a large corpus of text, and typically used as a language model to generate text that resembles human-written language.
+However, in this study we have experimented with GPT-2 as a regressor.
+Rather than retraining the model from scratch, we have fine tuned the model to behave as a regressor and  predict Spotify audio features.
+The basic idea behind this approach is to feed a string of concatenated Last.fm tags as input to the GPT-2 model, and then use the model's output as the predicted value of a specific Spotify audio feature.
+
+
+\subsection{Last.fm Tags Input Format}
 
 The preceding models require specific input formats.
 Therefore, we tested different input formats.
-
-\subsection{Last.fm Tags Input Format}
 
 Each individual sample in the dataset corresponds to a unique track,
 and contains the list of Last.fm tag-count tuples (e.g. \verb|[(electronic, 100), (dance, 45), ...]|)
@@ -756,106 +778,87 @@ An example of this data format is provided in table \ref{text_format}.
 
 
 
-\subsection{Boosted Tree Regressor}
+% \subsection{Boosted Tree Regressor}
 
-We configured the boosted tree regressor model with the training parameters listed in table \ref{table_xgboost_training_params}.
+% We configured the boosted tree regressor model with the training parameters listed in table \ref{table_xgboost_training_params}.
 
-\begin{table}[h!]
-      \begin{center}
-      \begin{minipage}{174pt}
-      \caption{Training parameters for XGBoost regressor}\label{table_xgboost_training_params}%
-      \begin{tabular}{@{}llll@{}}
-      \toprule
-      Parameter               & Value \\
-      \midrule
-      objective               & reg:squarederror  \\
-      base score              & 0.5 \\
-      booster                 & gbtree  \\
-      colsample bylevel       & 1 \\
-      colsample bynode        & 1 \\
-      colsample bytree        & 1 \\
-      gamma\footnotemark[1]   & 0 \\
-      learning rate           & 0.300000012 \\
-      max delta step          & 0 \\
-      max depth               & 6 \\
-      min child weight        & 1 \\
-      estimators              & 200  \\
-      n jobs                  & 12  \\
-      num parallel tree       & 1 \\
-      predictor               & auto  \\
-      random state            & 0 \\
-      reg alpha               & 0 \\
-      reg lambda              & 1 \\
-      scale pos weight        & 1 \\
-      subsample               & 2 \\
-      tree method             & auto  \\
-      \botrule
-      \end{tabular}
-      \footnotetext[1]{Minimum loss reduction required to make a further partition on a leaf node of the tree.}
-      \end{minipage}
-      \end{center}
-\end{table}
-
-
-\subsection{Naive Bayes Regressor}
-
-The Naive Bayes Regressor, and in particular, Bayesian Ridge, is the model used for regression in this case.
-
-% COMMENT copied FROM BayesianRidge source code
-% https://github.com/scikit-learn/scikit-learn/blob/9aaed4987/sklearn/linear_model/_bayes.py#L24
-%
-%     There exist several strategies to perform Bayesian ridge regression. This
-%     implementation is based on the algorithm described in Appendix A of
-%     (Tipping, 2001) where updates of the regularization parameters are done as
-%     suggested in (MacKay, 1992). Note that according to A New
-%     View of Automatic Relevance Determination (Wipf and Nagarajan, 2008) these
-%     update rules do not guarantee that the marginal likelihood is increasing
-%     between two consecutive iterations of the optimization.
-
-The training parameters are listed in table \ref{table_bayesian_training_params}.
-
-\begin{table}[h]
-      \begin{center}
-      \begin{minipage}{174pt}
-      \caption{Training parameters for XGBoost regressor}\label{table_bayesian_training_params}%
-      \begin{tabular}{@{}llll@{}}
-      \toprule
-      Parameter                     & Value \\
-      \midrule
-      Maximum iterations            & 300   \\
-      Tolerance\footnotemark[1]     & \num{1e-03} \\
-      alpha 1                       & \num{1e-06} \\
-      alpha 2                       & \num{1e-06} \\
-      lambda 1                      & \num{1e-06} \\
-      lambda 2                      & \num{1e-06} \\
-      \botrule
-      \end{tabular}
-      \footnotetext[1]{Tolerance for the stopping criteria.}
-      \end{minipage}
-      \end{center}
-\end{table}
+% \begin{table}[h!]
+%       \begin{center}
+%       \begin{minipage}{174pt}
+%       \caption{Training parameters for XGBoost regressor}\label{table_xgboost_training_params}%
+%       \begin{tabular}{@{}llll@{}}
+%       \toprule
+%       Parameter               & Value \\
+%       \midrule
+%       objective               & reg:squarederror  \\
+%       base score              & 0.5 \\
+%       booster                 & gbtree  \\
+%       colsample bylevel       & 1 \\
+%       colsample bynode        & 1 \\
+%       colsample bytree        & 1 \\
+%       gamma\footnotemark[1]   & 0 \\
+%       learning rate           & 0.300000012 \\
+%       max delta step          & 0 \\
+%       max depth               & 6 \\
+%       min child weight        & 1 \\
+%       estimators              & 200  \\
+%       n jobs                  & 12  \\
+%       num parallel tree       & 1 \\
+%       predictor               & auto  \\
+%       random state            & 0 \\
+%       reg alpha               & 0 \\
+%       reg lambda              & 1 \\
+%       scale pos weight        & 1 \\
+%       subsample               & 2 \\
+%       tree method             & auto  \\
+%       \botrule
+%       \end{tabular}
+%       \footnotetext[1]{Minimum loss reduction required to make a further partition on a leaf node of the tree.}
+%       \end{minipage}
+%       \end{center}
+% \end{table}
 
 
-\subsection{Fine-tuned Transformer}
+% \subsection{Naive Bayes Regressor}
 
-Transformers are a type of neural network architecture that has been widely used in natural language processing (NLP) tasks,
-such as text generation and question answering.
-They were first introduced in 2017 by paper [REF: "Attention Is All You Need"]
-and have become one of the most popular models due to their ability
-to handle long-range dependencies and process variable-length inputs.
+% The Naive Bayes Regressor, and in particular, Bayesian Ridge, is the model used for regression in this case.
 
-One popular variant of transformers is the Generative Pre-trained Transformer 2 (GPT-2),
-which was introduced by OpenAI in 2019.
-GPT-2 is a language model that has been trained on a large corpus of text,
-and can generate coherent and fluent text that resembles human-written language.
-GPT-2 has achieved remarkable results in a wide range of natural language processing tasks, including text generation, machine translation, and question answering.
+% % COMMENT copied FROM BayesianRidge source code
+% % https://github.com/scikit-learn/scikit-learn/blob/9aaed4987/sklearn/linear_model/_bayes.py#L24
+% %
+% %     There exist several strategies to perform Bayesian ridge regression. This
+% %     implementation is based on the algorithm described in Appendix A of
+% %     (Tipping, 2001) where updates of the regularization parameters are done as
+% %     suggested in (MacKay, 1992). Note that according to A New
+% %     View of Automatic Relevance Determination (Wipf and Nagarajan, 2008) these
+% %     update rules do not guarantee that the marginal likelihood is increasing
+% %     between two consecutive iterations of the optimization.
 
-In this study, we have used GPT-2 as a regressor to predict Spotify audio features from Last.fm tags. The basic idea behind this approach is to feed a string of concatenated Last.fm tags as input to the GPT-2 model, and then use the model's output as the predicted value of a specific Spotify audio feature. By training the GPT-2 model on a large dataset of Last.fm tags and corresponding Spotify audio features,
-we aim to learn the complex relationships between these two types of data and to use this knowledge to evaluate the prediction accuracy of Spotify audio features based on Last.fm tags.
+% The training parameters are listed in table \ref{table_bayesian_training_params}.
 
-To train the GPT-2 model as a regressor, we used a supervised learning approach.
-Specifically, we collected a large dataset of Last.fm tags and corresponding Spotify audio features, and used this dataset to train the GPT-2 model to predict Spotify audio features from Last.fm tags. We used a mean squared error loss function to optimize the model's performance during training, and we also employed techniques such as early stopping and learning rate scheduling to prevent overfitting and improve generalization performance.
-\textcolor{red}{Under development...}
+% \begin{table}[h]
+%       \begin{center}
+%       \begin{minipage}{174pt}
+%       \caption{Training parameters for XGBoost regressor}\label{table_bayesian_training_params}%
+%       \begin{tabular}{@{}llll@{}}
+%       \toprule
+%       Parameter                     & Value \\
+%       \midrule
+%       Maximum iterations            & 300   \\
+%       Tolerance\footnotemark[1]     & \num{1e-03} \\
+%       alpha 1                       & \num{1e-06} \\
+%       alpha 2                       & \num{1e-06} \\
+%       lambda 1                      & \num{1e-06} \\
+%       lambda 2                      & \num{1e-06} \\
+%       \botrule
+%       \end{tabular}
+%       \footnotetext[1]{Tolerance for the stopping criteria.}
+%       \end{minipage}
+%       \end{center}
+% \end{table}
+
+
+
 
 \subsection{Experiments Execution and Results}
 
