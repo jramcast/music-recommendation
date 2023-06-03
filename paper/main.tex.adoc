@@ -82,6 +82,14 @@ Additionally, the Spotify audio features
 In general, these studies confirm the posibility of extracting knowledge from Last.fm tags.
 To the best of our knowledge, no studies have addressed the problem of audio features regression, based solely on Last.fm tags.
 
+Panda and Redinho explore the use of Spotify high-level features applied to Music Emotion Recognition (MER).
+In particular, they identify that the energy, valence, and acousticness values, provided by the Spotify API,
+are highly relevant for emotion classification.
+They also achieve better performance on MER models by using their own top-100 features, and they determine that,
+although these three Spotify features are relevant in terms of characterizing emotion,
+more features are needed to effectively recognize emotion.
+Another interesting 
+
 To be Continued...
 
 == Generating a DataSet
@@ -119,6 +127,11 @@ In particular, they
 
 Last.fm is a online music community for users to keep track of their music listenting habits.
 Last.fm can also be considered as an community where users tag artists, albums, and tracks, according the the own perception of the user.
+A tag can refer to any aspect that users consider 
+
+For nearly two decades, many music aficionados have contributed their own unique, personal 
+
+For nearly two decades, the Last.fm community has been active, contributing 
 
 For nearly two decades, users have been contributing to Last.fm by tagging tracks with arbitrary text labels.
 These tags do not necessarily have to be single-worded.
@@ -132,6 +145,11 @@ Our study leverages Last.fm tags to predict music audio features.
 
 Originally called Echo Nest audio features, these features are a set of descriptors that define a music audio signal with continuous values.
 After the adquisition of Echo Nest by Spotify, Spotify integrated these features into their API.
+
+Spotify, one of the leaders in the music streaming industry, provides information about the tracks in their catalog via the Spotify API.
+This information includes 
+
+Among the different
 
 == Dataset Generation
 
@@ -179,6 +197,7 @@ able at https://www.last.fm/user/jimmydj2000/.
 Last.fm uses the term _scrobble_ to refer to a single track play-
 back, in a particular moment. We have queried the Last.fm
 API to download the user’s scrobble logs, reported from 2007 to 2022.
+
 For each scrobble, we have gathered the following information:
 
 * Track playback timestamp.
