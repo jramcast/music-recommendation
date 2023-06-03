@@ -779,6 +779,7 @@ An example of this data format is provided in table \ref{text_format}.
 \end{table}
 
 
+\textcolor{red}{what is the limit on the sequence length here?}
 
 
 % \subsection{Boosted Tree Regressor}
@@ -917,16 +918,16 @@ The table provides RMSE values for each experiment.
       Bayes     & 10000 tokens TC                     & 0.234            & 0.341           & 0.274          & 0.321           & 0.430          \\
       \midrule
       Tree      & 100 tags                            & 0.154            & 0.257           & 0.188          & 0.240           & 0.302          \\
-      Tree      & 1000 tags                           & 0.149            &\textbf{0.249}   & 0.184          & 0.236           & 0.291          \\
-      Tree      & 10000 tags                          &\textbf{0.148}    & 0.250           &\textbf{0.181}  & 0.235           &\textbf{0.290}  \\
+      Tree      & 1000 tags                           & 0.149            &\textbf{0.249}   & 0.184          & 0.236           & 0.292          \\
+      Tree      & 10000 tags                          &\textbf{0.148}    & 0.250           &\textbf{0.181}  & \textbf{0.235}  &\textbf{0.291}  \\
       Tree      & 100 tokens D                        & 0.274            & 0.274           & 0.212          & 0.256           & 0.330          \\
-      Tree      & 1000 tokens D                       & 0.173            & 0.278           & 0.215          & \textbf{0.220}  & 0.339          \\
+      Tree      & 1000 tokens D                       & 0.173            & 0.278           & 0.215          & 0.268           & 0.339          \\
       Tree      & 10000 tokens D                      & 0.172            & 0.276           & 0.217          & 0.266           & 0.342          \\
       Tree      & 100 tokens O                        & 0.179            & 0.294           & 0.225          & 0.271           & 0.350          \\
       Tree      & 1000 tokens O                       & 0.182            & 0.294           & 0.224          & 0.270           & 0.353          \\
       Tree      & 10000 tokens O                      & 0.182            & 0.294           & 0.225          & 0.267           & 0.353          \\
       Tree      & 100 tokens TC                       & 0.172            & 0.280           & 0.211          & 0.262           & 0.342          \\
-      Tree      & 1000 tokens TC                      & 0.174            & 0.282           & 0.215          & \textbf{0.220}  & 0.344          \\
+      Tree      & 1000 tokens TC                      & 0.174            & 0.282           & 0.215          & 0.268           & 0.344          \\
       Tree      & 10000 tokens TC                     & 0.175            & 0.281           & 0.214          & 0.270           & 0.345          \\
       \midrule
       GPT       & Duplicated\footnotemark[5]          & 0.157            & 0.244           & 0.193          & 0.245           & 0.322          \\
@@ -952,12 +953,15 @@ The table provides RMSE values for each experiment.
       \end{center}
 \end{table}
 
-The Spotify feature that the models had less trouble estimating was the danceability.
+The Spotify feature that the models had less trouble estimating was the danceability, and the energy.
 The instrumentalness, however, was the feature that presented the highest deviations.
+Acousticness and valence also presented high RMSE values.
+
 The GTP-2 model was the best model to predict the danceability, with a \num{0.145} RMSE.
 The Boosted tree was the best model to predict the instrumentalness, with a RMSE value of \num{0.29}.
 
-In general, the three models performed similarly, with GPT-2 achieving the slightly better results in danceability and acousticness. The Boosted Tree regressor was the best model to predict energy, valence, and instrumentalness.
+In general, the three models performed similarly, with GPT-2 achieving slightly better results in danceability, acousticness, and valence.
+The Boosted Tree regressor was the best model to predict energy, and instrumentalness.
 
 The two regressors achieved the best results when using the \emph{Tags as columns} format, mostly with \num{10000} tags.
 Interestingly, the Boosted Tree regressor achieved better results with tokens when estimating valence.
