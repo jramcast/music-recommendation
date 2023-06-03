@@ -595,50 +595,44 @@ The basic idea behind this approach is to feed a string of concatenated Last.fm 
 \subsection{Last.fm Tags Input Format}
 
 The preceding models require specific input formats.
-Therefore, we tested different input formats.
+In particular, the boosted tree and bayesian ridge regressors require structured data (e.g a set of predictor features and a set of target variables), whereas GTP-2 expects text strings as input.
 
-Each individual sample in the dataset corresponds to a unique track,
+Each individual sample in the Last.fm singe-user dataset corresponds to a unique track,
 and contains the list of Last.fm tag-count tuples (e.g. \verb|[(electronic, 100), (dance, 45), ...]|)
 and the values of Spotify audio features.
-Before experimenting with machine learning models, we prepared the data in a number of different formats,
-each one suitable for specific models.
+The Last.fm single-user dataset was converted to the formats described in the following sections, and then fed into the corresponding models.
 
 
-\subsubsection{Tabular}
-With this format, the Last.fm tags are represented as a table.
+\subsubsection{Last.fm Tags as Table Columns}
+The tabular format represents the Last.fm tags as columns in a table.
 Each tag is defined by a column and each cell contains the count value of a tag for a track.
-A cell is 0 if a tag is missing for a track.
+If a $tag$ is not present for a particular $track$, then cell $c_{track,tag}$ is \num{0}.
 
 Counting the total amount of Last.fm tags in the user collection resulted, initially, in more than five million tags.
-We quickly confirmed that building a tabular data set, in which every row contains millions of columns (Last.fm tags)
-was doable, but presented scalability problems.
-In addition to scalability limitations, classic machine learning models might not take advantage of using the full dataset.
+Under this high-dimensionality scenario, building a tabular data set, in which every row contains millions of columns (i.e. Last.fm tags) was theoretically possible, but presented scalability problems.
+In addition to scalability limitations, classic machine learning models might not take advantage of using the full collection of tags present in the user history.
 These models might even perform poorly if too many input features are provided.
 The reason for this is spurious relations or redundancy  between input features.
-Models might find relations that are not real, and latent, redundant variables might be accountable multiple times, which creates a bias in the output.
+Models might find relations that are not real, and latent, redundant variables might be accountable multiple times, which can lead to a biased outputs.
 Feature subject selection aims at solving these problems.
 
-% For example, a Bayesian model might provide low-quality results of provided with variables that are not conditionally independent.
 
 Therefore, we reduced the number of tags by picking a subset of the most relevant tags.
-
-The reduction algorithm uses a basic data aggregation algorightm: group the data by tag, aggregate by summing the \emph{count} values for each tag,
-order by the aggregated count, and finally select the top-$K$ items of the ranking.
-
-We generated three versions of the dataset, with different values of $K$: 100, 1,000 and 10,000.
-
-We consider this reduction approach an initial approach.
+We used a the feature selection algorithm by using a basic data aggregation algorithm: grouping the data by tag, aggregating by summing the \emph{count} values for each tag,
+ordering by the aggregated count, and finally selecting the top-$K$ tags of the ranking.
+Three values of $K$, were used, thus generating three subsets: \num{100}, \num{1000}, and \num{10000}.
+We consider this reduction approach an initial approach approach in our experiments.
 For this particular aspect, dimensionality reduction algorithms, such as PCA, are good candidates for future work.
 
-After selecting the top-$K$ tags, the input data passed was formatted in tabular format, as follows:
+After selecting the top-$K$ tags, the Last.fm single-user dataset was formatted as follows:
 
 \begin{itemize}
       \item Given that $Tags_{K}$ is the set of most $K$ frequent Last.fm tags in the user listening history
-            and, where each $tag \in Tags_{K}$.
+            , where each $tag \in Tags_{K}$.
       \item Given that $Audio$ is the set of Spotify audio features, where each $feat \in Audio$.
       \item For each $track$:
       \begin{itemize}
-            \item $X_{track},_{tag}$ is the strengh of $tag$ for $track$. This value is in the $0-100$ range.
+            \item $X_{tag,track}$ is the $count$ value of $tag$ for $track$. This value is in the $0-100$ range.
             \item $y_{track},_{feature}$ is the value of the audio feature $y$ for $track$.
       \end{itemize}
 \end{itemize}
@@ -662,54 +656,58 @@ An example of this data format is provided in table \ref{tabular_tags_format}.
       \end{center}
 \end{table}
 
-When generating training data by track, the tabular formats present sparsity problems.
+The main drawback of this representation is data sparsity.
+For most of the tracks, many columns are \num{0}.
 
-For tabular representations, we need to defined a fixed set of columns as tags.
-For most of tracks, most columns are 0.
+This format was tested with the Bayesian Ridge and the Boosted Tree regressors.
 
-The sparsity of a matrix is the number of zero-valued elements divided by the total number of elements
-(e.g., m * n for an m * n matrix) is called the sparsity of the matrix.
+% The sparsity of a matrix is the number of zero-valued elements divided by the total number of elements
+% (e.g., m * n for an m * n matrix) is called the sparsity of the matrix.
 
 
-\subsubsection{Tabular Tokens}
+\subsubsection{Tokens as Table Columns}
 
-Tags are converted to text tokens. Columns represent token positions, and cells contain the token at a particular position, for a track.
-To tokenize tags, we have used the GTP-2 tokenizer.
-
+This format is also structured, but the input data is a set of tokens instead of tag count values.
+These \emph{tokens} are the result of passing the tags, concatenated as a string, through a tokenizer.
 Tokenizers are crucial elements in the preprocessing of text data.
 A tokenizer dissects a piece of text into smaller units, called tokens.
-These tokens can be words, subwords, or even syllables or characters.
+These tokens can be words, subwords, or even characters.
+
+% Tags are converted to text tokens. Columns represent token positions, and cells contain the token at a particular position, for a track.
+% To tokenize tags, we have used the GTP-2 tokenizer.
 
 When breaking down the text into tokens, the tokenizer assigns a unique numerical identifier to each token.
-This IDs are based on the vocabulary that the tokenizer has been trained on.
-For example, when the tokenizer processes the \verb|"Hello world"| string, the Hello token might be assigned to ID \verb|123|
-and the world token might be assigned to ID \verb|34534|.
-The result of tokenizing \verb|Hello world| would be \verb|[123, 34534]|.
+These identifiers are based on the vocabulary that the tokenizer has been trained on.
+For example, when the tokenizer processes the \verb|"pop rock"| string, the \verb|pop| token might be assigned to ID \verb|123|
+and the \verb|rock| token might be assigned to ID \verb|34534|.
+Consequently, the result of tokenizing \verb|pop rock| would be \verb|[123, 34534]|.
 
-Note that, although tokenizers are most commonly used in combination with transformer models, in this paper we test the possiblity of using theorem
-to preproccess data passed to Bayesian an Tree models.
+Note that, although tokenizers are most commonly used in combination with transformer models, in this paper we test the possibility of using a tokenizer to preproccess the data passed to the models that require structured data.
 
-Because the tokenizer requires a string as input, we have converted the set of tags for each track into a string.
-To \emph{stringify} the tags, we have concatenated tags with multiple strategies:
+Because the tokenizer requires a string as the input, we converted the set of tags for each track into a string, in a process that we called \emph{stringification}.
+To \emph{stringify} the tags, we concatenated Last.fm tags by following these three strategies:
 
 \begin{itemize}
-      \item Ordering by count: \verb|"rock, pop"|.
-      \item Including tag count: \verb|"rock 2, pop 1"|.
-      \item Duplicating each tag $count$ times: \verb|"rock rock, pop"|.
+      \item Order by count: \verb|"rock, pop"|.
+      \item Include tag count: \verb|"rock 2, pop 1"|.
+      \item Duplicate tags $count$ times: \verb|"rock rock, pop"|.
 \end{itemize}
 
 
-In this particular case, the $X$ values of the tabular input data are tokens.
+In this particular case, the $X$ values of the tabular input data are the token IDs.
 These tokens are obtained from passing the string of concatenated Last.fm tags through the GPT-2 tokenizer,
 as the following procedure explains:
 
 \begin{itemize}
+      \item Given that $S$ is the stringification strategy.
       \item Given that $X_L$ is the token vocabulary, where $L$ is the maximum vocabulary length.
       \item Given that $Audio$ is the set of Spotify audio features, where each $feat \in Audio$.
-      \item For each $track$:
+      \item For each $track$ and $S$:
       \begin{itemize}
-            \item $X_{track},_{n}$ is token found at position $n$, after tokenizing the tags string.
-            \item $y_{track},_{feature}$ is the value of the audio feature $y$ for $track$.
+            \item $tags_{track,str}$ is the string of concatenated tags produced by strategy $S$.
+            \item $tokens_{track}$ is the list of token IDs produced after tokenizing $tags_{str}$.
+            \item $X_{n,track}$ is token ID found at position $n$ of $tokens_{track}$.
+            \item $y_{feature, track}$ is the value of the audio feature $y$ for $track$.
       \end{itemize}
 \end{itemize}
 
@@ -733,14 +731,19 @@ An example of this data format is provided in table \ref{tabular_token_format}.
 \end{table}
 
 Similarly to the tags tabular format, we also defined fixed values for the number of columns: 10, 1,000, and 10,000.
+\textcolor{red}{Decir cual es el nombre de este limite (maxsequence length?)}
 
-The two tabular formats, with tags and tokens, were tested on the Naive Bayes and the Boosted tree regressors.
+
+Similar to the previous structured format, this format was also used in the Bayesian and Boosted Tree regressors.
+In contrast to the previous format, this format does not present sparsity.
+It incorporates however, other problems, such as the lack of normalization of the values, which do not represent scalars, but IDs.
+It is also harder to inspect, because the meaning of each token is unknown.
 
 
-\subsection{Text Strings}
+\subsubsection{Text Strings}
 
 When using transformer models, the input data is a string.
-We must represent the Last.fm tags, which are defined as $(tag, count)$ tuples, as strings.
+To use GPT-2, we had to represent the Last.fm tags, which are defined as $(tag, count)$ tuples, as strings.
 To this end, we applied the same three transformations used in the tabular tokens formats,
 concatenate the tags by ordering by count, by including the tag count, and by duplicating the tags.
 
@@ -862,6 +865,16 @@ An example of this data format is provided in table \ref{text_format}.
 
 \subsection{Experiments Execution and Results}
 
+The experiments tested the three models, and the three values of $K$: \num{100}, \num{1000}, \num{10000}.
+In the Bayesian Ridge and Boosted tree regressors, we tested the two structured data formats: tags and tokens as columns.
+In the GTP-2 model, we tested the text data format.
+
+For the formats that required the concatenation of tags into text strings, we tested the three different stringification strategies.
+
+The data was split into a training set (\num{8654} samples), a validation set(\num{2164} samples), and a test set (\num{2705} samples).
+The quality of the model was evaluated by using the root mean squared error (RMSE).
+This metric was computed on the test set.
+
 Table \ref{table:experiment_results} summaries the experiment results.
 The table provides RMSE values for each experiment.
 
@@ -905,15 +918,15 @@ The table provides RMSE values for each experiment.
       \midrule
       Tree      & 100 tags                            & 0.154            & 0.257           & 0.188          & 0.240           & 0.302          \\
       Tree      & 1000 tags                           & 0.149            &\textbf{0.249}   & 0.184          & 0.236           & 0.291          \\
-      Tree      & 10000 tags                          &\textbf{0.148}    & 0.250           &\textbf{0.181}  &\textbf{0.235}   &\textbf{0.290}  \\
+      Tree      & 10000 tags                          &\textbf{0.148}    & 0.250           &\textbf{0.181}  & 0.235           &\textbf{0.290}  \\
       Tree      & 100 tokens D                        & 0.274            & 0.274           & 0.212          & 0.256           & 0.330          \\
-      Tree      & 1000 tokens D                       & 0.173            & 0.278           & 0.215          & 0.220           & 0.339          \\
+      Tree      & 1000 tokens D                       & 0.173            & 0.278           & 0.215          & \textbf{0.220}  & 0.339          \\
       Tree      & 10000 tokens D                      & 0.172            & 0.276           & 0.217          & 0.266           & 0.342          \\
       Tree      & 100 tokens O                        & 0.179            & 0.294           & 0.225          & 0.271           & 0.350          \\
       Tree      & 1000 tokens O                       & 0.182            & 0.294           & 0.224          & 0.270           & 0.353          \\
       Tree      & 10000 tokens O                      & 0.182            & 0.294           & 0.225          & 0.267           & 0.353          \\
       Tree      & 100 tokens TC                       & 0.172            & 0.280           & 0.211          & 0.262           & 0.342          \\
-      Tree      & 1000 tokens TC                      & 0.174            & 0.282           & 0.215          & 0.220           & 0.344          \\
+      Tree      & 1000 tokens TC                      & 0.174            & 0.282           & 0.215          & \textbf{0.220}  & 0.344          \\
       Tree      & 10000 tokens TC                     & 0.175            & 0.281           & 0.214          & 0.270           & 0.345          \\
       \midrule
       GPT       & Duplicated\footnotemark[5]          & 0.157            & 0.244           & 0.193          & 0.245           & 0.322          \\
@@ -938,6 +951,28 @@ The table provides RMSE values for each experiment.
       \end{minipage}
       \end{center}
 \end{table}
+
+The Spotify feature that the models had less trouble estimating was the danceability.
+The instrumentalness, however, was the feature that presented the highest deviations.
+The GTP-2 model was the best model to predict the danceability, with a \num{0.145} RMSE.
+The Boosted tree was the best model to predict the instrumentalness, with a RMSE value of \num{0.29}.
+
+In general, the three models performed similarly, with GPT-2 achieving the slightly better results in danceability and acousticness. The Boosted Tree regressor was the best model to predict energy, valence, and instrumentalness.
+
+The two regressors achieved the best results when using the \emph{Tags as columns} format, mostly with \num{10000} tags.
+Interestingly, the Boosted Tree regressor achieved better results with tokens when estimating valence.
+Even better results than GPT-2.
+In the rest of the features, the regressors worked better with tags as columns.
+
+Using a higher number of predictor variables was not a synonym of lower error values when using tokens a columns.
+
+The Bayesian regressor was a bit more sensitive to changes in tag formating.
+This model tended to work better with data formatted by using the Tag Count stringification method.
+The Boosted Tree regressor presented less sensitivity to format changes, although the model generally performed better with the Tags as columns format too.
+
+The Duplicated stringification method consistently performed worse with the GTP-2 transformer model.
+
+
 
 \subsubsection{Results for Tabular Data Models}
 
@@ -986,6 +1021,9 @@ Track mapping between Last.fm and Spotify is another opportunity for research an
 Although Last.fm provides the MusicBrainz unique identifier, but Spotify does not provide this value.
 The mapping was performed by using the track artist and name, but this approach resulted on about 30\% of the tracks not found on Spotify.
 
+
+We consider this reduction approach an initial approach approach in our experiments.
+For this particular aspect, dimensionality reduction algorithms, such as PCA, are good candidates for future work.
 
 
 \textcolor{red}{TODO}
