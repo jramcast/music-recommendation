@@ -325,7 +325,7 @@ which are related to the audio but also to the listeners perception.
 Similarly to Last.fm, Spotify (or Echo Nest) audio features are commonly present in MIR research.
 For example, Wang and Horv{\'a}t used  these audio features to study the differences 
 between male and female artists \cite{wang2019gender}.
-\textcolor{red}{Y que consiguieron?}
+\textcolor{red}{And what did they achieve?}
 
 Jamdar et al. used Echo Nest audio features, combined with lyrics data to classify songs into emotion tags.
 These classes were first defined based on a Last.fm tags emotion mapping \cite{jamdar2015emotion}.
@@ -361,8 +361,10 @@ The dataset creators argue that, although the terms of service prohibits scrapin
 Another publicly available dataset is the \emph{Spotify Audio Features} Kaggle dataset\footnote[4]{https://www.kaggle.com/datasets/tomigelo/spotify-audio-features}.
 This dataset contains more than 116,000 unique tracks, and includes audio features for each track.
 
-For this reason, we chose to generate our own dataset.
-
+There are various reasons why we chose to generate our own dataset.
+First, we wanted to generate a dataset that combined both Last.fm tags and Spotify audio features.
+Second, there is lack of clarity regarding the conditions under which Spotify allows the use of the audio features.
+Third, we wanted to explore a research line where machine learning models are trained by using the listening history of a single user. 
 % Another dataset created from the Spotify API and published to Kaggle:
 % https://www.kaggle.com/datasets/andrewmvd/spotify-playlists
 
@@ -384,14 +386,14 @@ For this reason, we chose to generate our own dataset.
 % is a probabilistic model that uses Bayesian inference to estimate
 % the parameters of the model.
 
-% Additionally, language models, such as GTP-2 have shown promising results in various
+% Additionally, language models, such as GPT-2 have shown promising results in various
 % natural language processing (NLP) and generation.
 
-% In this particular study, GTP-2 has been fine-tuned for regression tasks,
+% In this particular study, GPT-2 has been fine-tuned for regression tasks,
 % and has shown good performance in predicting audio features from metadata.
 
 % This paper aims to apply the boosted tree regressor,
-%  Bayesian ridge regressor, and GTP-2 models to predict Spotify audio features from Last.fm tags.
+%  Bayesian ridge regressor, and GPT-2 models to predict Spotify audio features from Last.fm tags.
 % The experiments compare the performance of these models and evaluate their effectiveness
 % in predicting various audio features.
 % The results of these experiments will provide insights into
@@ -457,7 +459,7 @@ count value of 100.
 For example, if \emph{jazz} is the most popular tag for a track,
 then the track might be probably associated to the following tuple \verb|(jazz, 100)|.
 
-Users tipically listen to their favorite tracks several times,
+Users typically listen to their favorite tracks several times,
 so the amount of unique tracks played is smaller
 than the number of track plays. In this case, the amount of
 individual tracks listened in a 15-year period is about \num{20000} and the number of scrobblings is, approximately, \num{90000}.
@@ -537,11 +539,7 @@ and Figure \ref{fig:audio-features-distribution-kaggle}.
       \end{minipage}
 
 \end{table}
-% \begin{table}[h!]
-%       \begin{center}
 
-%       \end{center}
-% \end{table}
 
 \begin{figure}[h!]
       \centering
@@ -572,6 +570,8 @@ Considering that predicting the audio feature values is a regression problem, we
 \end{itemize}
 
 
+\subsection{Models}
+
 The \emph{Boosted tree regressor} is a specific implementation of the \emph{XGBoost} algorithm for regression tasks.
 This algorithm is an ensemble learning technique that combines simple multiple decision trees to
 create a stronger predictive model.
@@ -583,7 +583,7 @@ Compared to linear regression, which assumes that the model estimated parameters
 By incorporating prior distributions into the learning process, the model is able to capture uncertainty.
 The ridge regression technique enables the model to handle noisy, collinear, structured data.
 
-The \emph{GTP-2} model is a transformer model.
+The \emph{GPT-2} model is a transformer model.
 Transformers are a type of neural network architecture that has been widely used in natural language processing (NLP) tasks,
 such as text generation and question answering.
 GPT-2 has been trained on a large corpus of text, and typically used as a language model to generate text that resembles human-written language.
@@ -591,11 +591,92 @@ However, in this study we have experimented with GPT-2 as a regressor.
 Rather than retraining the model from scratch, we have fine tuned the model to behave as a regressor and  predict Spotify audio features.
 The basic idea behind this approach is to feed a string of concatenated Last.fm tags as input to the GPT-2 model, and then use the model's output as the predicted value of a specific Spotify audio feature.
 
+\subsubsection{Models Parametrization}
+
+Due to the different models and input encodings that we employed in the models, we decided to limit the dimensionality of the experiments, 
+by using mostly the default hyperparameters that the most common libraries set for these models.
+
+For the Bayesian ridge regressor, we used the default hyperparameters set by the \emph{scikit-learn} library.
+The training parameters for the Bayesian ridge are listed in table \ref{table_bayesian_training_params}.
+
+To fine tune the GPT-2 model, we used the \emph{GPT2ForSequenceClassification} model of the \emph{Transformers} Python library.
+The parameters used are listed in table \ref{table_gpt2_training_params}.
+
+\begin{table}[!ht]
+      \begin{minipage}{.5\linewidth}
+            \caption{Training parameters for Bayesian Ridge regressor}\label{table_bayesian_training_params}%
+            \centering
+                  \begin{tabular}{@{}ll@{}}
+                  \toprule
+                  Parameter                     & Value \\
+                  \midrule
+                  Maximum iterations            & 300   \\
+                  Tolerance\footnotemark[1]     & \num{1e-03} \\
+                  alpha 1                       & \num{1e-06} \\
+                  alpha 2                       & \num{1e-06} \\
+                  lambda 1                      & \num{1e-06} \\
+                  lambda 2                      & \num{1e-06} \\
+                  \botrule
+                  \end{tabular}
+            \footnotetext[1]{Tolerance for the stopping criteria.}
+            \caption{Training parameters for GPT-2 regressor}\label{table_gpt2_training_params}%
+            \centering
+                  \begin{tabular}{@{}ll@{}}
+                  \toprule
+                  Parameter                     & Value \\
+                  \midrule
+                  Batch size                    & 10 \\
+                  Problem type                  & regression \\
+                  Epochs                        & 10 \\
+                  Sequence length (tokens)      & 256 \\
+                  Tokenizer                     & GPT-2 tokenizer \\
+                  \botrule
+                  \end{tabular}
+      \end{minipage}
+      \begin{minipage}{.5\linewidth}
+            \caption{Training parameters for XGBoost regressor}\label{table_xgboost_training_params}%
+            \centering
+                  \begin{tabular}{@{}ll@{}}
+                  \toprule
+                  Parameter               & Value \\
+                  \midrule
+                  objective               & reg:squarederror  \\
+                  base score              & 0.5 \\
+                  booster                 & gbtree  \\
+                  colsample bylevel       & 1 \\
+                  colsample bynode        & 1 \\
+                  colsample bytree        & 1 \\
+                  gamma\footnotemark[1]   & 0 \\
+                  learning rate           & 0.3 \\
+                  max delta step          & 0 \\
+                  max depth               & 6 \\
+                  min child weight        & 1 \\
+                  estimators              & 200  \\
+                  n jobs                  & 12  \\
+                  num parallel tree       & 1 \\
+                  predictor               & auto  \\
+                  random state            & 0 \\
+                  reg alpha               & 0 \\
+                  reg lambda              & 1 \\
+                  scale pos weight        & 1 \\
+                  subsample               & 2 \\
+                  tree method             & auto  \\
+                  \botrule
+                  \end{tabular}
+            \footnotetext[1]{Tolerance for the stopping criteria.}
+      \end{minipage}
+\end{table}
+
+
+Similarly, for the boosted tree regressor, we used the default parameters set in the \emph{xgboost} Python library.
+We configured the boosted tree regressor model with the training parameters listed in table \ref{table_xgboost_training_params}.
 
 \subsection{Last.fm Tags Input Format}
 
+\textcolor{red}{TODO: Create diagram}
+
 The preceding models require specific input formats.
-In particular, the boosted tree and bayesian ridge regressors require structured data (e.g a set of predictor features and a set of target variables), whereas GTP-2 expects text strings as input.
+In particular, the boosted tree and bayesian ridge regressors require structured data (e.g a set of predictor features and a set of target variables), whereas GPT-2 expects text strings as input.
 
 Each individual sample in the Last.fm singe-user dataset corresponds to a unique track,
 and contains the list of Last.fm tag-count tuples (e.g. \verb|[(electronic, 100), (dance, 45), ...]|)
@@ -674,7 +755,7 @@ A tokenizer dissects a piece of text into smaller units, called tokens.
 These tokens can be words, subwords, or even characters.
 
 % Tags are converted to text tokens. Columns represent token positions, and cells contain the token at a particular position, for a track.
-% To tokenize tags, we have used the GTP-2 tokenizer.
+% To tokenize tags, we have used the GPT-2 tokenizer.
 
 When breaking down the text into tokens, the tokenizer assigns a unique numerical identifier to each token.
 These identifiers are based on the vocabulary that the tokenizer has been trained on.
@@ -731,7 +812,7 @@ An example of this data format is provided in table \ref{tabular_token_format}.
 \end{table}
 
 Similarly to the tags tabular format, we also defined fixed values for the number of columns: 10, 1,000, and 10,000.
-\textcolor{red}{Decir cual es el nombre de este limite (maxsequence length?)}
+\textcolor{red}{Describe the name of this particular limit (maxsequence length?)}
 
 
 Similar to the previous structured format, this format was also used in the Bayesian and Boosted Tree regressors.
@@ -784,43 +865,7 @@ An example of this data format is provided in table \ref{text_format}.
 
 % \subsection{Boosted Tree Regressor}
 
-% We configured the boosted tree regressor model with the training parameters listed in table \ref{table_xgboost_training_params}.
 
-% \begin{table}[h!]
-%       \begin{center}
-%       \begin{minipage}{174pt}
-%       \caption{Training parameters for XGBoost regressor}\label{table_xgboost_training_params}%
-%       \begin{tabular}{@{}llll@{}}
-%       \toprule
-%       Parameter               & Value \\
-%       \midrule
-%       objective               & reg:squarederror  \\
-%       base score              & 0.5 \\
-%       booster                 & gbtree  \\
-%       colsample bylevel       & 1 \\
-%       colsample bynode        & 1 \\
-%       colsample bytree        & 1 \\
-%       gamma\footnotemark[1]   & 0 \\
-%       learning rate           & 0.300000012 \\
-%       max delta step          & 0 \\
-%       max depth               & 6 \\
-%       min child weight        & 1 \\
-%       estimators              & 200  \\
-%       n jobs                  & 12  \\
-%       num parallel tree       & 1 \\
-%       predictor               & auto  \\
-%       random state            & 0 \\
-%       reg alpha               & 0 \\
-%       reg lambda              & 1 \\
-%       scale pos weight        & 1 \\
-%       subsample               & 2 \\
-%       tree method             & auto  \\
-%       \botrule
-%       \end{tabular}
-%       \footnotetext[1]{Minimum loss reduction required to make a further partition on a leaf node of the tree.}
-%       \end{minipage}
-%       \end{center}
-% \end{table}
 
 
 % \subsection{Naive Bayes Regressor}
@@ -838,28 +883,6 @@ An example of this data format is provided in table \ref{text_format}.
 % %     update rules do not guarantee that the marginal likelihood is increasing
 % %     between two consecutive iterations of the optimization.
 
-% The training parameters are listed in table \ref{table_bayesian_training_params}.
-
-% \begin{table}[h]
-%       \begin{center}
-%       \begin{minipage}{174pt}
-%       \caption{Training parameters for XGBoost regressor}\label{table_bayesian_training_params}%
-%       \begin{tabular}{@{}llll@{}}
-%       \toprule
-%       Parameter                     & Value \\
-%       \midrule
-%       Maximum iterations            & 300   \\
-%       Tolerance\footnotemark[1]     & \num{1e-03} \\
-%       alpha 1                       & \num{1e-06} \\
-%       alpha 2                       & \num{1e-06} \\
-%       lambda 1                      & \num{1e-06} \\
-%       lambda 2                      & \num{1e-06} \\
-%       \botrule
-%       \end{tabular}
-%       \footnotetext[1]{Tolerance for the stopping criteria.}
-%       \end{minipage}
-%       \end{center}
-% \end{table}
 
 
 
@@ -868,7 +891,7 @@ An example of this data format is provided in table \ref{text_format}.
 
 The experiments tested the three models, and the three values of $K$: \num{100}, \num{1000}, \num{10000}.
 In the Bayesian Ridge and Boosted tree regressors, we tested the two structured data formats: tags and tokens as columns.
-In the GTP-2 model, we tested the text data format.
+In the GPT-2 model, we tested the text data format.
 
 For the formats that required the concatenation of tags into text strings, we tested the three different stringification strategies.
 
@@ -953,11 +976,15 @@ The table provides RMSE values for each experiment.
       \end{center}
 \end{table}
 
+\textcolor{red}{TODO: as you have std deviations for your RMSE, can you say that
+.291 is really better than .297 ? (idem for other results)}
+
+
 The Spotify feature that the models had less trouble estimating was the danceability, and the energy.
 The instrumentalness, however, was the feature that presented the highest deviations.
 Acousticness and valence also presented high RMSE values.
 
-The GTP-2 model was the best model to predict the danceability, with a \num{0.145} RMSE.
+The GPT-2 model was the best model to predict the danceability, with a \num{0.145} RMSE.
 The Boosted tree was the best model to predict the instrumentalness, with a RMSE value of \num{0.29}.
 
 In general, the three models performed similarly, with GPT-2 achieving slightly better results in danceability, acousticness, and valence.
@@ -974,7 +1001,7 @@ The Bayesian regressor was a bit more sensitive to changes in tag formatting.
 This model tended to work better with data formatted by using the Tag Count stringification method.
 The Boosted Tree regressor presented less sensitivity to format changes, although the model generally performed better with the Tags as columns format too.
 
-The Duplicated stringification method consistently performed worse with the GTP-2 transformer model.
+The Duplicated stringification method consistently performed worse with the GPT-2 transformer model.
 
 
 
