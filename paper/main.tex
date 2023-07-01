@@ -101,17 +101,28 @@
 \equalcont{These authors contributed equally to this work.}
 
 
-\affil[1]{\orgdiv{Departamento de Sistemas Informáticos}, \orgname{Universidad de Castilla-La Mancha}, \orgaddress{\street{Campus universitario s/n}, \city{Albacete}, \postcode{02071}, \country{Spain}}}
-
-
 %%==================================%%
 %% sample for unstructured abstract %%
 %%==================================%%
 
 \abstract{
-    In this paper, we discuss a number of experiments to analyze the
-    suitability of music label representations to predict certain audio features,
-    such as danceability, loudness, or acousticness \dots
+      Music information retrieval (MIR) is an interdisciplinary research field that focuses on the extraction, processing,
+      and knowledge discovery of information contained in music.
+      While previous studies have utilized Spotify audio features
+      and Last.fm tags as input values for classification tasks, such as music genre recognition,
+      their potential as target values has remained unexplored.
+      In this article, we address this notable gap in the research landscape by proposing a novel approach to predict
+      Spotify audio features based on a set of Last.fm tags.
+      By predicting audio features, we aim to explore the relationship between subjective perception and concrete musical features,
+      shedding light on patterns and hidden correlations between how music is perceived, consumed, and discovered.
+      Additionally, the predicted audio features can be leveraged in recommendation systems
+      to provide users with explainable recommendations, bridging the gap between algorithmic suggestions and user understanding.
+      Our experiments involve training models such as GPT-2, XGBRegressor, and Bayesian Ridge regressor to predict
+      Spotify audio features from Last.fm tags.
+      Through our findings, we contribute to the advancement of MIR research by demonstrating the potential of Last.fm
+      tags as target values and paving the way for future research on the connection between subjective and objective music characterization.
+      Our approach holds promise for both listeners and researchers,
+      offering new insights into the intricate relationship between perception and audio signal in music.
 }
 
 
@@ -156,7 +167,7 @@ The ability to process images or videos is also required, for example, for analy
 
 Depending on the specific MIR application, researchers or practitioners expect different output values.
 Applications that extract audio features typically return audio descriptors, namely values related to the tempo, the key, or the sample rate, among others.
-Open source libraries such as \emph{Librosa}\footnote[1]{https://librosa.org/} 
+Open source libraries such as \emph{Librosa}\footnote[1]{https://librosa.org/}
 and \emph{Essentia}\footnote[2]{https://essentia.upf.edu/index.html} offer methods to extract these values.
 Other applications might produce higher-level values, for example, by using machine learning techniques
 that estimate the emotion that a track induces, or the music genre of this track.
@@ -258,7 +269,7 @@ explore existing literature that is related to the problem and review the facts 
 The use of Last.fm tags and Spotify audio features has been common and prolific in studies
 that have applied machine learning to resolve MIR challenges.
 
-An important concept to consider is the arousal-valence cuadrants, present in music emotion recognition, 
+An important concept to consider is the arousal-valence cuadrants, present in music emotion recognition,
 related to some studies that will be reviewed in the following sections, and also related to the valence and energy
 Spotify audio features.
 
@@ -323,7 +334,7 @@ These features are a set of high-level descriptors, such as energy and danceabil
 which are related to the audio but also to the listeners perception.
 
 Similarly to Last.fm, Spotify (or Echo Nest) audio features are commonly present in MIR research.
-For example, Wang and Horv{\'a}t used  these audio features to study the differences 
+For example, Wang and Horv{\'a}t used  these audio features to study the differences
 between male and female artists \cite{wang2019gender}.
 \textcolor{red}{And what did they achieve?}
 
@@ -364,7 +375,7 @@ This dataset contains more than 116,000 unique tracks, and includes audio featur
 There are various reasons why we chose to generate our own dataset.
 First, we wanted to generate a dataset that combined both Last.fm tags and Spotify audio features.
 Second, there is lack of clarity regarding the conditions under which Spotify allows the use of the audio features.
-Third, we wanted to explore a research line where machine learning models are trained by using the listening history of a single user. 
+Third, we wanted to explore a research line where machine learning models are trained by using the listening history of a single user.
 % Another dataset created from the Spotify API and published to Kaggle:
 % https://www.kaggle.com/datasets/andrewmvd/spotify-playlists
 
@@ -593,7 +604,7 @@ The basic idea behind this approach is to feed a string of concatenated Last.fm 
 
 \subsubsection{Models Parametrization}
 
-Due to the different models and input encodings that we employed in the models, we decided to limit the dimensionality of the experiments, 
+Due to the different models and input encodings that we employed in the models, we decided to limit the dimensionality of the experiments,
 by using mostly the default hyperparameters that the most common libraries set for these models.
 
 For the Bayesian ridge regressor, we used the default hyperparameters set by the \emph{scikit-learn} library.
@@ -920,7 +931,9 @@ The table provides RMSE values for each experiment.
 \begin{table}[h!]
       \begin{center}
       \begin{minipage}{\textwidth}
-      \caption{Experiment results. Cells values correspond to the RMSE value.}\label{table:experiment_results}%
+      \caption{Experiment results. Cells values correspond to the RMSE value.
+      Highlighted values correspond to the best RMSE value achieved by each model, for each variable.}
+      \label{table:experiment_results}%
       \begin{tabular}{@{}lllllll@{}}
       \toprule
       M         & Input format                        & Danceab...       & Acoustic...    & Energy          & Valence         & Instrumen... \\
@@ -975,10 +988,6 @@ The table provides RMSE values for each experiment.
       \end{minipage}
       \end{center}
 \end{table}
-
-\textcolor{red}{TODO: as you have std deviations for your RMSE, can you say that
-.291 is really better than .297 ? (idem for other results)}
-
 
 The Spotify feature that the models had less trouble estimating was the danceability, and the energy.
 The instrumentalness, however, was the feature that presented the highest deviations.
@@ -1052,6 +1061,12 @@ Track mapping between Last.fm and Spotify is another opportunity for research an
 Although Last.fm provides the MusicBrainz unique identifier, but Spotify does not provide this value.
 The mapping was performed by using the track artist and name, but this approach resulted on about 30\% of the tracks not found on Spotify.
 
+The standard deviation values that are displayed in figure \ref{fig:rmse_by_feature_and_input} are in the 0.1-0.2 margin.
+Considering this factor, we argue that the RMSE values that some models manifest are, in fact, noteworthy.
+For example, the best value for instrumentalness is \num{0.291}.
+Considering that the mean and standard deviation for all the experiments with this variable are, respectively,\num{0.414} and\num{0.106}, the z-scores
+of \num{0.291} and \num{0.297} are \num{-1.16} and \num{-1.10}.
+We can conclude that the \num{0.291} and \num{0.297} values are close to each other and exhibit a similar level of deviation from the mean.
 
 We consider this reduction approach an initial approach approach in our experiments.
 For this particular aspect, dimensionality reduction algorithms, such as PCA, are good candidates for future work.
