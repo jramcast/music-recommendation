@@ -212,9 +212,9 @@ Finally, in section \ref{sec6} we conclude our study.
 \subsection{Last.fm Tags}
 
 Last.fm is an online music community where users keep track of their music listening habits.
-Users apply tags to artists, tracks, and albums to categorize and describe music from their own perspective, which
-implies that the Last.fm tags space does not fit into any structured ontology or data model.
-A tag can refer to any aspect that users consider to be a valid descriptor, such as genre,
+Users apply tags to artists, tracks, and albums to categorize and describe the music they listen to, from their own perspective.
+The fact that Last.fm tags are community-contributed implies that the tag space does not fit into any structured ontology or data model.
+A tag can refer to any aspect that users consider valid and useful for the community, such as genre,
 emotion, or user listening context.
 
 For nearly two decades, many music aficionados have collectively contributed their own unique, personal interpretation, opinions and feelings
@@ -237,8 +237,8 @@ that a particular song is highly suitable for dancing.
 
 The features provided by the Spotify API are listed in
 Table \ref{table:spotify-features}.
-While Spotify provides a description of the audio features.
-How they compute or estimate these values is not publicly available.
+Whereas Spotify provides a description of the audio features,
+how they compute or estimate these values is not publicly available.
 The reader can find further details about each feature in the Spotify API documentation\footnote[5]{
       \url{https://developer.spotify.com/documentation/web-api/reference/\#/operations/get-audio-features}
 }.
@@ -269,15 +269,8 @@ The reader can find further details about each feature in the Spotify API docume
 
 \section{Related Research}\label{sec3}
 
-The objective of this study is to predict Spotify audio features from Last.fm tags, so the objective of this section is to
-explore existing literature that is related to the problem and review the facts that are important or relevant for our experimentation.
-
 The use of Last.fm tags and Spotify audio features has been common and prolific in studies
 that have applied machine learning to resolve MIR challenges.
-
-An important concept to consider is the arousal-valence cuadrants, present in music emotion recognition,
-related to some studies that will be reviewed in the following sections, and also related to the valence and energy
-Spotify audio features.
 
 \subsection{Last.fm Tags}
 
@@ -302,62 +295,55 @@ In their study, they created a semantic mood space based on Last.fm tags \cite{l
 % Similarly, tags such as "happy," "sad," and "angry" have been used
 % to predict the valence and arousal of a track.
 
-{\c{C}}ano and Morisio performed an analysis of Last.fm tags to create a dataset of music
+
+The use of Last.fm tags as input data is common in the literature.
+In particular, the Last.fm API has been tipically used to build datasets that are subsequently fed into MIR problems.
+For example, {\c{C}}ano and Morisio performed an analysis of Last.fm tags to create a dataset of music
 lyrics annotated with Last.fm tags.
 In the creation process, they concluded that Last.fm tags are mostly related to music genre
 and positive moods \cite{ccano2017music}.
 
 In a similar direction, Bod{\'o} and Szil{\'a}gyi generated a dataset for lyrics genre classification
-by combining the Last.fm with \emph{MusicBrainz} data \cite{bodo2018connecting}.
+by combining Last.fm tags with \emph{MusicBrainz} data \cite{bodo2018connecting}.
 MusicBrainz is an online database of music editorial metadata\footnote[1]{https://musicbrainz.org/}.
 
-Although different datasets that contain Last.fm tags have been created, so far,
-the \emph{Last.fm dataset}\footnotemark[2] has been the most widely used in research.
+Among datasets that contain Last.fm tags, arguably, the \emph{Last.fm dataset}\footnotemark[2] has been the most widely used in research.
 This dataset is a complementary dataset of the Million Song Dataset (MSD) \cite{Bertin-Mahieux2011}.
 
 \footnotetext[2]{Last.fm dataset, the official song tags and song similarity collection for the Million Song
 Dataset, available at: http://millionsongdataset.com/lastfm.}
 
-In general, these studies confirm the possibility of extracting knowledge from Last.fm tags.
-
-\textcolor{red}{We introduced this section talking about machine learning but only refeferred to studies
-that use Last.fm tags in exploration and data set creation}
+In general, Last.fm tags have been used, generally, as input features for extracting knowledge.
+The use of Last.fm tags as target features in machine learning models, however, although less frequent, is also present \cite{eck2007autotagging}.
 
 \subsection{Spotify Audio Features}
 
 Historically, the Spotify audio features features were called the \emph{Echo Nest audio features}.
 \emph{The Echo Nest} was an online music intelligence platform that provided users and clients with music analysis services.
-Among these services, the Echo Nest offered a database and an API to retrieve audio features for each of the tracks in the database \footnote[3]{https://en.wikipedia.org/wiki/The\_Echo\_Nest}.
+Among these services, the Echo Nest offered a database and an API to retrieve audio features for each of the tracks in the database\footnote[3]{https://en.wikipedia.org/wiki/The\_Echo\_Nest}.
 Spotify acquired the Echo Nest in 2014.
 As a result, the Echo Nest API was eventually deactivated and Spotify migrated these audio features to the Spotify API.
 
 Nowadays, the two terms can be found in published research.
 Whereas the most recent studies refer to the Spotify audio features,
 earlier studies use the Echo Nest denomination.
-
-Regardless of the term used, the features remain the same.
+Regardless of the term used, the list of available features remains the same.
 These features are a set of high-level descriptors, such as energy and danceability,
-which are related to the audio but also to the listeners perception.
+which are related to the audio and to the listeners perception.
 
 Similarly to Last.fm, Spotify (or Echo Nest) audio features are commonly present in MIR research.
-For example, Wang and Horv{\'a}t used  these audio features to study the differences
-between male and female artists \cite{wang2019gender}.
-\textcolor{red}{And what did they achieve?}
+In one statistical study, Wang and Horv{\'a}t used these features to compare male and female artists,
+and discovered significant differences between the two binary genres \cite{wang2019gender}.
 
-Jamdar et al. used Echo Nest audio features, combined with lyrics data to classify songs into emotion tags.
+Regarding its use in machine learning problems, Jamdar et al. used Echo Nest audio features, combined with lyrics data to classify songs into emotion tags.
 These classes were first defined based on a Last.fm tags emotion mapping \cite{jamdar2015emotion}.
-
-Similarly, Non-negative Matrix Factorization was applied in combination with EchoNest audio features
+In a different study, non-negative Matrix Factorization was applied in combination with EchoNest audio features
 for song recommendations \cite{benzi2016song}.
 
-Panda and Redinho explore the use of Spotify high-level features applied to Music Emotion Recognition (MER) \cite{panda2021does}.
-In particular, they identify that the energy, valence, and acousticness values, provided by the Spotify API,
-are highly relevant for emotion classification.
-They also achieve better performance on MER models by using their own top-100 features, and they determine that,
-although these three Spotify features are relevant in terms of characterizing emotion,
-more features are needed to effectively recognize emotion.
-Another interesting observation of this study is the the identification of energy as a surrogate of arousal valence
-
+Panda and Redinho explored the use of Spotify audio features in Music Emotion Recognition (MER) \cite{panda2021does}.
+They identified that the energy, valence, and acousticness values are highly relevant for emotion classification.
+Another interesting observation of this study is the recognition of energy as a surrogate of the valence.
+The \emph{Arousal-valence emotion plane} is an important concept in emotion-related topics, such as MER, and represents the space of emotions in a 2-dimensional plane.
 
 In general, Spotify audio features have been used as predictive input variables.
 We, to the best of our knowledge, are unaware of studies that use these features as target variables,
@@ -368,59 +354,20 @@ Similarly to Last.fm tags, Spotify audio features can be found in a number of da
 Publicly available datasets of Spotify audio features can be found online,
 as a result of open-source and research communities collecting data from the Spotify API and publishing the results.
 It is unclear, however, whether these published datasets completely meet the Spotify API terms of service.
-
 For example, \emph{P4kxspotify} is a publicly available dataset that combines music review texts with Spotify audio features.
 The dataset creators argue that, although the terms of service prohibits scraping, their work is ethical \cite{pinter2020p4kxspotify}.
-
-
-
 
 Another publicly available dataset is the \emph{Spotify Audio Features} Kaggle dataset\footnote[4]{https://www.kaggle.com/datasets/tomigelo/spotify-audio-features}.
 This dataset contains more than 116,000 unique tracks, and includes audio features for each track.
 
-There are various reasons why we chose to generate our own dataset.
-First, we wanted to generate a dataset that combined both Last.fm tags and Spotify audio features.
-Second, there is lack of clarity regarding the conditions under which Spotify allows the use of the audio features.
-Third, we wanted to explore a research line where machine learning models are trained by using the listening history of a single user.
-% Another dataset created from the Spotify API and published to Kaggle:
-% https://www.kaggle.com/datasets/andrewmvd/spotify-playlists
 
-
-% TODO: move explanation to the experiment section.
-% \subsubsection{Machine Learning Models}
-
-% Several studies have explored the use of machine learning
-% models to predict audio features from audio metadata, such as Last.fm tags.
-% % which studies use Last.fm tags as parameters?
-
-% The experiments conduced in this study used two classical regression models,
-% Boosted tree regressor and Bayesian ridge regressor.
-% These two machine learning models that have been widely used in MIR. % is this true? (refs)
-
-% Boosted tree regressor is a decision tree-based model that sequentially
-% adds weak learners to the model to improve its performance.
-% Bayesian ridge regressor, on the other hand,
-% is a probabilistic model that uses Bayesian inference to estimate
-% the parameters of the model.
-
-% Additionally, language models, such as GPT-2 have shown promising results in various
-% natural language processing (NLP) and generation.
-
-% In this particular study, GPT-2 has been fine-tuned for regression tasks,
-% and has shown good performance in predicting audio features from metadata.
-
-% This paper aims to apply the boosted tree regressor,
-%  Bayesian ridge regressor, and GPT-2 models to predict Spotify audio features from Last.fm tags.
-% The experiments compare the performance of these models and evaluate their effectiveness
-% in predicting various audio features.
-% The results of these experiments will provide insights into
-% the use of different machine learning models for MIR tasks
-% and can have practical applications
-% in music recommendation systems and genre or mood recognition.
-%
-%\textcolor{red}{To be Continued \dots }
 
 \section{Generating a Dataset}\label{sec4}
+
+We have chosen to generate our own dataset for a number of reasons.
+First, we wanted to generate a dataset that combined both Last.fm tags and Spotify audio features.
+Second, there is lack of clarity regarding the conditions under which Spotify allows the use of the audio features.
+And third, we wanted to explore a research line where machine learning models are trained by using the listening history of a single user.
 
 Before conducting experiments to predict audio features from tags,
 we constructed a dataset of Last.fm tags and Spotify audio features, indexed by track, by gathering the data from the Last.fm and Spotify APIs.
@@ -442,15 +389,15 @@ If we train a system on data from different users, then the system would share t
 
 Using a single-user data set might sound counterproductive in a machine learning scenario, specially considering
 how machine learning breakthroughs have attempted, and succeeded in many cases, to generalize in a particular problem.
-This is not objective of this study, which explores how a machine learning model can represent the music consumption experience of a single human.
-The model must be able to generalize, but only within the context of the user's musical taste, which be believe can be possible, given a sufficiently large listening history.
+This is not objective of our research line, which explores how a machine learning model can represent the music consumption experience of a single human.
+Our final model must be able to generalize, but only within the context of the user's musical taste, which be believe can be possible, given a sufficiently large listening history.
 
 
 \subsection{Gathering Listening History and Tags from Last.fm}
 
 Last.fm uses the term \emph{scrobble} to refer to the action of playing a track at a specific moment in time.
 Last.fm started monitoring user listening activity with a desktop application called \emph{Scrobbler}.
-Users used to install this application on their computers to monitor their activity on players such as Winamp or iTunes.
+Users install this application on their computers to monitor their activity on players such as Winamp or iTunes.
 With the advent of music streaming services, the possibilities for users to scrobble their music habits expanded.
 Integrations where developed to integrate the scrobbler into popular platforms,
 such as Spotify, YouTube, or SoundCloud.
@@ -459,7 +406,7 @@ Mobile versions of the Scrobbler were also developed for Android and iOS devices
 
 For us, the first step to construct the dataset was to download the user listening activity.
 We queried the Last.fm API to download the user{'}s scrobbling logs, reported from 2007 to 2022.
-For each scrobble, we have gathered the following information:
+For each scrobble, we gathered the following information:
 
 \begin{itemize}
 \item Playback timestamp
@@ -486,19 +433,19 @@ Therefore, the user has listened to each song, approximately, \num{4.5} times on
 \subsection{Gathering Spotify Audio Features}
 
 After collecting the listening history and track tags from Last.fm, and identifying the unique
-tracks that represent the user music collection, we used the Spotify API to
+tracks that represent the user music collection, we queried the Spotify API to
 collect audio features for each one of the \num{20000} individual tracks.
 
 
 The mapping between Last.fm and Spotify tracks was performed on an artist-track basis.
 For each track, the artist and track name extracted from Last.fm were used as parameters of the Spotify Search API.
-The Last.fm API provides a unique identifier, the \emph{MusicBrainz} ID.
-The Spotify API, however, does not provide this value.
+The Last.fm API provides a unique identifier, the \emph{MusicBrainz} ID for some tracks.
+The Spotify API, however, does not provide this value so we could not establish an unequivocal mapping.
 
 \subsection{Filtering Missing Values}
 
 After retrieving audio features, we identified that the Spotify API had failed to provide audio features for a portion of the tracks.
-Similarly, Last.fm also returned no tags for another subset of the tracks.
+Similarly, Last.fm returned an empty tag list for another subset of the tracks.
 To prevent problems with missing values, we decided to filter out these tracks from the dataset.
 After filtering tracks that were missing Last.fm tags or Spotify audio features,
 the dataset resulted in \num{14009} samples.
@@ -593,7 +540,6 @@ The \emph{Boosted tree regressor} is a specific implementation of the \emph{XGBo
 This algorithm is an ensemble learning technique that combines simple multiple decision trees to
 create a stronger predictive model.
 This model has proved to be a powerful solution for classification and regression problems on high-dimensional, structured data.
-\textcolor{red}{REF}
 
 The \emph{Bayesian Ridge regressor} is a regression model that combines the principles of Bayesian statistics with ridge regression.
 Compared to linear regression, which assumes that the model estimated parameters have a deterministic value, the Bayesian Ridge regressor treats the model coefficients as variables with a prior distribution.

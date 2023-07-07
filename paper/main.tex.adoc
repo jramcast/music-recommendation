@@ -136,6 +136,7 @@ For nearly two decades, the Last.fm community has been active, contributing
 For nearly two decades, users have been contributing to Last.fm by tagging tracks with arbitrary text labels.
 These tags do not necessarily have to be single-worded.
 Users often use short sentences to define a song, such as `I like this track`, or `on the beach`.
+The use of Last.fm tags 
 
 Our study leverages Last.fm tags to predict music audio features.
 
@@ -154,6 +155,8 @@ Among the different
 == Dataset Generation
 
 Considering a set of tracks, we can gather the following attributes for each track:
+
+For us, the first step to construct the dataset was 
 
 *  _Community-contributed tags from the Last.fm API_.
 These tags are text labels that Last.fm users assign
