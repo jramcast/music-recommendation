@@ -1,0 +1,3 @@
+== 4qcnn Research
+
+Experiments to predict emotion quadrants from audio with the 4q dataset.
