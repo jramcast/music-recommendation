@@ -100,7 +100,7 @@ def train_with_tag_probs(
     models_save_dir: Path,
     data_dir: Path,
 ):
-    experiment = f"{target}-{model_key}-{num_tags}_probs-by_{dimension}"
+    experiment = f"{target}-{model_key}-{num_tags}-probs-by_{dimension}"
 
     logger = logging.getLogger(experiment)
 
@@ -142,7 +142,7 @@ def train_with_tag_tokens(
     data_dir: Path,
 ):
     experiment = (
-        f"{target}-{model_key}-{num_tokens}_tokens-"
+        f"{target}-{model_key}-{num_tokens}-tokens_"
         f"from_{stringifier_method}-by_{dimension}"
     )
 
