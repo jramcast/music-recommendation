@@ -1,0 +1,54 @@
+== Instructions for the OpenShit AI Working Environment
+
+
+=== Creating the database
+
+1. Create an OpenShift AI project called `phd`.
+
+2. Switch to that project with `oc`.
++
+[source,console]
+----
+oc project phd
+----
+
+3. Import the bitnami helm repository:
++
+[source,console]
+----
+helm repo add bitnami https://charts.bitnami.com/bitnami
+----
+
+4. Create a MongoDB database:
++
+[source,console]
+----
+$ helm install mongodb bitnami/mongodb --set arbiter.enabled=false,architecture="standalone",replicaCount=1,podSecurityContext.fsGroup="",containerSecurityContext.runAsUser="1003339988",podSecurityContext.enabled=false,architecture=replicaset,auth.enabled=false,persistence.size=20Gi
+----
++
+[NOTE]
+====
+You might need to adjust the `runAsUser` property, based on the available user ranges in your cluster.
+====
+
+5. To import the existing database dump files (`lastfm_playedtracks.json` and `spotify_audiofeatures.json`) to the database, use `mongoimport`.
+You must first forward the mongo pod port to your local workstation.
++
+[source,console]
+----
+$ oc port-forward mongodb-0 27017
+----
++
+[source,console,subs+=quotes]
+----
+$ mongoimport --uri=mongodb://localhost:27017/mgr \
+ --collection lastfm_playedtracks __path/to/lastfm_playedtracks.json__
+----
++
+[source,console,subs+=quotes]
+----
+$ mongoimport --uri=mongodb://localhost:27017/mgr \
+ --collection spotify_audiofeatures __path/to/spotify_audiofeatures.json__
+----
+
+
