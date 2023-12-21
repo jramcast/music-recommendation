@@ -1,5 +1,5 @@
 const express = require('express');
-const { recommend } = require('../recommendation/service');
+const { recommend } = require('../recommendation/Pipeline');
 const { TextPreference } = require('../recommendation/entities');
 // eslint-disable-next-line new-cap
 const router = express.Router();
@@ -9,11 +9,11 @@ router.get('/', function(req, res, next) {
   res.render('index', {title: 'Music Recommendation'});
 });
 
-router.post('/preference', async function(req, res, next) {
+router.post('/recommend', async function(req, res, next) {
     const preference = new TextPreference(req.body.preference);
     const recommendation = await recommend(preference);
     console.log(recommendation);
-    res.render('recommendation', {recommendation});
+    res.render('recommendation', { preference, recommendation});
 });
 
 export default router;

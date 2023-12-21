@@ -1,14 +1,31 @@
 extends layout
 
 block content
-  h1.title Recommendation
-  p This is your recommendation:
-
-  ul
-  each track in recommendation.tracks
-    li= track.info
-
-  h2.title Audio features
-
+  h1 Recommendation
+  p Based on your input:
+  pre= preference.text
+  p These audio features have been infered:
   ul
     li Danceability #{recommendation.features.danceability}
+
+  p These are the tracks closest to those features:
+
+  ol
+  each recommendedTrack in recommendation.tracks
+    li
+      .title #{recommendedTrack.track.artist} - #{recommendedTrack.track.trackName}
+      p Distance: #{recommendedTrack.distance.danceabilityDistance.toFixed(8)}
+      p
+        iframe(
+          style="border-radius:12px",
+          src=`https://open.spotify.com/embed/track/${recommendedTrack.spotifyTrackID}?utm_source=generator`,
+          width="500",
+          height="200",
+          frameBorder="0",
+          allowfullscreen="",
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture",
+          loading="lazy"
+        )
+      p Tags:
+        each tag in recommendedTrack.tags 
+          span  #{tag.tag}:#{tag.weight}
