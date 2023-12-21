@@ -1,0 +1,29 @@
+{
+  "name": "app",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "npm run build && node ./out/bin/www.js",
+    "build": "tsc",
+    "postbuild": "npm run copy-assets",
+    "copy-assets": "cp -R views out/ && cp -R public out/",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "express": "~4.16.1",
+    "http-errors": "~1.6.3",
+    "mongodb": "^6.3.0",
+    "morgan": "~1.9.1",
+    "pug": "2.0.0-beta11"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.5",
+    "dotenv": "^16.3.1",
+    "eslint": "^8.56.0",
+    "eslint-config-google": "^0.14.0",
+    "typescript": "^5.3.3"
+  }
+}

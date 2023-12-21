@@ -1,0 +1,14 @@
+extends layout
+
+block content
+  h1.title Recommendation
+  p This is your recommendation:
+
+  ul
+  each track in recommendation.tracks
+    li= track.info
+
+  h2.title Audio features
+
+  ul
+    li Danceability #{recommendation.features.danceability}
