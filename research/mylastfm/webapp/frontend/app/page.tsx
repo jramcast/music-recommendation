@@ -9,6 +9,7 @@ import { siteConfig } from "@/config/site";
 import { title, subtitle } from "@/components/primitives";
 import { GithubIcon } from "@/components/icons";
 import { Textarea, Input } from "@nextui-org/input";
+import { RecommendationForm } from "@/components/recommendation-form";
 
 export default function Home() {
 
@@ -32,7 +33,7 @@ export default function Home() {
 				</h2>
 			</div>
 
-
+			<RecommendationForm onSubmit={() => { /* TODO */}}></RecommendationForm>
 
 			{/* <div className="mt-8">
 				<Snippet hideSymbol hideCopyButton variant="flat">
