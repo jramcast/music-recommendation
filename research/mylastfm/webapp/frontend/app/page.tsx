@@ -13,11 +13,10 @@ import { RecommendationForm } from "@/components/recommendation-form";
 
 export default function Home() {
 
-
-	function handleSubmit(event) {
-		console.log(event);
-		event.preventDefault();
-	}
+	// function handleSubmit(event) {
+	// 	console.log(event);
+	// 	event.preventDefault();
+	// }
 
 	return (
 		<section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">

@@ -1,7 +1,4 @@
-
-"use client";
-
-import { useState } from "react";
+import { ChangeEvent, useState } from "react";
 import { Button } from "@nextui-org/button";
 import { Textarea } from "@nextui-org/input";
 
@@ -17,7 +14,7 @@ export function RecommendationForm(props: RecommendationFormProps) {
         props.onSubmit(text);
         event.preventDefault();
     }
-    function handleTextAreaChange(event: React.FormEvent<HTMLFormElement>) {
+    function handleTextAreaChange(event: ChangeEvent<HTMLInputElement>) {
         setText(text);
         event.preventDefault();
     }
