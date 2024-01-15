@@ -1,10 +1,39 @@
-export class Preference {
+import topTags from "./top-1000-tags.json";
 
+export abstract class UserPreference {
+    abstract asTop1000TagWeights();
+    abstract asText();
 }
 
 
-export class TextPreference {
-    constructor(public text: string) { }
+export class UserPreferenceAsText extends UserPreference {
+    constructor(public text: string) {
+        super();
+    }
+
+    asText() {
+        return this.text;
+    }
+
+    asTop1000TagWeights() {
+        const preferenceWords = this.text.toLocaleLowerCase().split(" ");
+
+        const tagWeights = topTags
+            .map(tag => tag.toLocaleLowerCase())
+            .map(tag => {
+                for (const [i, preferenceWord] of preferenceWords.entries()) {
+                    // If the tag includes any of the words included in the input preference,
+                    // give some weight to this tag. The tag weight depends on the position of the preference word
+                    // in the preference text.
+                    if (tag.includes(preferenceWord)) {
+                        return Math.floor(100/(1 + i));
+                    }
+                }
+                return 0;
+            });
+
+        return tagWeights;
+    }
 }
 
 export class AudioPreference {
