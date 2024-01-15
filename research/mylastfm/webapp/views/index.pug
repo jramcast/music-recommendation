@@ -1,0 +1,15 @@
+extends layout
+
+block content
+  h1.title= title
+  p Welcome to #{title}
+
+  form(action='/recommend', method='post')
+    .field
+      label.label(for='preference') Describe what you would like to listen:
+      input.textarea(name='preference', id='preference')
+
+      br
+
+    .field
+    input.button.is-link(id="submit-preference", type='submit', value='Submit')
