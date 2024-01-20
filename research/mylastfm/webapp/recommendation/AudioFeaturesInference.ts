@@ -32,12 +32,13 @@ export interface ModelServingRequestBody<T> {
 
 export class InferenceServiceError extends Error {
 
-    public endpoint = "todo";
+    public endpoint: string;
     public payload;
-    constructor(message, payload, responseBody) {
+
+    constructor(message: string, endpoint: string, payload, responseBody) {
         const fullMessage = `${message}: ${responseBody.message}`;
         super(fullMessage);
-        this.endpoint = "todo";
+        this.endpoint = endpoint;
         this.payload = payload;
         console.error(fullMessage);
     }

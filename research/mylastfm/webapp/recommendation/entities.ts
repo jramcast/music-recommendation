@@ -16,7 +16,25 @@ export class UserPreferenceAsText extends UserPreference {
     }
 
     asTop1000TagWeights() {
-        const preferenceWords = this.text.toLocaleLowerCase().split(" ");
+
+        const stopwords = [",",".","", "i", "me", "my", "myself", "we", "our",
+        "ours", "ourselves", "you", "your", "yours", "yourself", "yourselves",
+        "he", "him", "his", "himself", "she", "her", "hers", "herself", "it", "its",
+        "itself", "they", "them", "their", "theirs", "themselves", "what", "which", "who", "whom", "this", "that",
+        "these", "those", "am", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "having",
+        "do", "does", "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until", "while",
+        "of", "at", "by", "for", "with", "about", "against", "between", "into", "through", "during", "before", "after",
+        "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again", "further",
+        "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each", "few", "more", "most",
+        "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very", "s", "t", "can", "will",
+        "just", "don", "should", "now"];
+
+        const preferenceWords = this.text.toLocaleLowerCase()
+            .split(/\s|\b/)
+            .map(word => word.trim())
+            .filter(word => !stopwords.includes(word));
+
+        console.log(preferenceWords);
 
         const tagWeights = topTags
             .map(tag => tag.toLocaleLowerCase())
@@ -26,11 +44,20 @@ export class UserPreferenceAsText extends UserPreference {
                     // give some weight to this tag. The tag weight depends on the position of the preference word
                     // in the preference text.
                     if (tag.includes(preferenceWord)) {
-                        return Math.floor(100/(1 + i));
+                        return Math.floor(100/(1 + Math.log10(i + 1)));
                     }
                 }
                 return 0;
             });
+
+        console.log(tagWeights);
+        console.log("---");
+
+        // var randomArray = [];
+        // for (var i = 0; i < topTags.length; i++) {
+        //     randomArray.push(Math.floor(Math.random() * 101));
+        // }
+        // return randomArray;
 
         return tagWeights;
     }
@@ -82,7 +109,7 @@ export class Recommendation {
     ) { }
 }
 
-class RecommendationDistanceToBestCase {
+export class RecommendationDistanceToBestCase {
     constructor(
         public acousticnessDistance: number,
         public danceabilityDistance: number,

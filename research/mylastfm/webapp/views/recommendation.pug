@@ -6,7 +6,11 @@ block content
   pre= preference.text
   p These audio features have been infered:
   ul
+    li Acousticness #{recommendation.features.acousticness}
     li Danceability #{recommendation.features.danceability}
+    li Instrumentalness #{recommendation.features.instrumentalness}
+    li Energy #{recommendation.features.energy}
+    li Valence #{recommendation.features.valence}
 
   p These are the tracks closest to those features:
 
@@ -14,7 +18,11 @@ block content
   each recommendedTrack in recommendation.tracks
     li
       .title #{recommendedTrack.track.artist} - #{recommendedTrack.track.trackName}
-      p Distance: #{recommendedTrack.distance.danceabilityDistance.toFixed(8)}
+      p Acousticness Distance: #{recommendedTrack.distance.acousticnessDistance.toFixed(8)}
+      p Danceability Distance: #{recommendedTrack.distance.danceabilityDistance.toFixed(8)}
+      p Instrumentalness Distance: #{recommendedTrack.distance.instrumentalnessDistance.toFixed(8)}
+      p Energy Distance: #{recommendedTrack.distance.energyDistance.toFixed(8)}
+      p Valence Distance: #{recommendedTrack.distance.valenceDistance.toFixed(8)}
       p
         iframe(
           style="border-radius:12px",

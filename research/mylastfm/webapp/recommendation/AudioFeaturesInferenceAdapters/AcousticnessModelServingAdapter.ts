@@ -1,9 +1,9 @@
-import { ModelServingRequestBody, InferenceServiceError } from "../AudioFeaturesInference";
-import { AudioFeatures, UserPreference } from "../entities";
+import { UserPreference } from "../entities";
+import { predictAudioFeature } from "./ModelServingClient";
 
 
-const DANCEABILITY_INFERENCE_ENDPOINT = process.env.DANCEABILITY_INFERENCE_ENDPOINT;
+const ACOUSTICNESS_INFERENCE_ENDPOINT = process.env.ACOUSTICNESS_INFERENCE_ENDPOINT;
 
 export async function predictAcousticness(preference: UserPreference) {
-    return 0;
+    return predictAudioFeature(preference, ACOUSTICNESS_INFERENCE_ENDPOINT);
 }

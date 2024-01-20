@@ -12,7 +12,6 @@ router.get('/', function(req, res, next) {
 router.post('/recommend', async function(req, res, next) {
     const preference = new UserPreferenceAsText(req.body.preference);
     const recommendation = await recommend(preference);
-    console.log(recommendation);
     res.render('recommendation', { preference, recommendation});
 });
 
