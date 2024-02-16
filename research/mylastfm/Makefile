@@ -5,7 +5,7 @@ mongo:
 	podman start mongomgr
 
 mongo_create:
-	podman run --name mongomgr -d -v mongomgr:/data/db/ -v $$(pwd)/data:/tmp/mgr-export:z  -p 27017:27017 mongo:4
+	podman run --name mongomgr -d -v mongomgr:/data/db/ -v $$(pwd)../../../data:/tmp/mgr-export:z  -p 27017:27017 mongo:4
 
 mongocli:
 	podman exec -i -t mongomgr mongo mgr

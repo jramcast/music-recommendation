@@ -94,7 +94,7 @@ if __name__ == "__main__":
     )
 
     lastfm_tag_probs = dataloading.lastfm.read_csv_tag_probs(
-        DATA_DIR, parse_timestamp=True
+        DATA_DIR, num_tags=1000, time_precision="hours", parse_timestamp=True
     )
     hour, lastfm_tag_probs = get_lastfm_tag_probs_for_current_hour(lastfm_tag_probs)
     print("🎶 PHASE 1: Generating Last.fm input tag scores for current time 🎶")

@@ -42,6 +42,8 @@ export async function fetchRecommendations(audioFeatures: AudioFeatures) {
             const recommendedTrack = new RecommendedTrack(
                 new Track(doc.track_artist, doc.track_name, doc.features[0]),
                 doc.features[0].id,
+
+                // Acousticness and Instrumentalness are taken out of the computation because they do not perform well
                 new RecommendationDistanceToBestCase(
                     Math.abs(doc.features[0].acousticness - audioFeatures.acousticness),
                     Math.abs(doc.features[0].danceability - audioFeatures.danceability),
@@ -91,7 +93,8 @@ function euclideanDistance(audioFeatures: AudioFeatures, track: SpotifyTrack): n
     }
 
     for (const dimension of dimensions) {
-        const diff = audioFeatures[dimension] - track.features[0][dimension];
+        const variability = 0; // -0.2 + (Math.random() * 0.4) Uncomment to add randomness
+        const diff = variability + audioFeatures[dimension] - track.features[0][dimension];
         sum += diff * diff;
     }
 

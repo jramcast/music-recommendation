@@ -1,0 +1,15 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  annotations:
+    serving.knative.openshift.io/enablePassthrough: "true"
+    sidecar.istio.io/inject: "true"
+    sidecar.istio.io/rewriteAppHTTPProbers: "true"
+  name: audio-features-gpt2-regressor
+spec:
+  predictor:
+    containers:
+    - name: kserve-container
+      image: quay.io/jramcast/audio-features-gpt2-regressor:1.0
+      ports:
+      - containerPort: 8080

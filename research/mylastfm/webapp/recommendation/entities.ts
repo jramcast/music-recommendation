@@ -53,11 +53,11 @@ export class UserPreferenceAsText extends UserPreference {
         console.log(tagWeights);
         console.log("---");
 
-        // var randomArray = [];
-        // for (var i = 0; i < topTags.length; i++) {
-        //     randomArray.push(Math.floor(Math.random() * 101));
-        // }
-        // return randomArray;
+        var randomArray = [];
+        for (var i = 0; i < topTags.length; i++) {
+            randomArray.push(Math.floor(Math.random() * 101));
+        }
+        return randomArray;
 
         return tagWeights;
     }
