@@ -1,14 +1,14 @@
-import { predictAcousticness } from "./AudioFeaturesInferenceAdapters/AcousticnessModelServingAdapter";
-import { predictDanceability } from "./AudioFeaturesInferenceAdapters/DanceabilityModelServingAdapter";
-import { predictEnergy } from "./AudioFeaturesInferenceAdapters/EnergyModelServingAdapter";
-import { predictInstrumentalness } from "./AudioFeaturesInferenceAdapters/InstrumentalnessModelServingAdapter";
-import { predictValence } from "./AudioFeaturesInferenceAdapters/ValenceModelServingAdapter";
+import { predictAcousticness } from "./AudioFeaturesInferenceAdapters/ModelServing/AcousticnessModelServingAdapter";
+import { predictDanceability } from "./AudioFeaturesInferenceAdapters/ModelServing/DanceabilityModelServingAdapter";
+import { predictEnergy } from "./AudioFeaturesInferenceAdapters/ModelServing/EnergyModelServingAdapter";
+import { predictInstrumentalness } from "./AudioFeaturesInferenceAdapters/ModelServing/InstrumentalnessModelServingAdapter";
+import { predictValence } from "./AudioFeaturesInferenceAdapters/ModelServing/ValenceModelServingAdapter";
 
-import { predictAcousticness as predictAcousticnessGPT2 } from "./AudioFeaturesInferenceAdapters/GTP2/AcousticnessModelServingAdapter";
-import { predictDanceability as predictDanceabilityGPT2 } from "./AudioFeaturesInferenceAdapters/GTP2/DanceabilityModelServingAdapter";
-import { predictEnergy as predictEnergyGPT2 } from "./AudioFeaturesInferenceAdapters/GTP2/EnergyModelServingAdapter";
-import { predictInstrumentalness as predictInstrumentalnessGPT2 } from "./AudioFeaturesInferenceAdapters/GTP2/InstrumentalnessModelServingAdapter";
-import { predictValence as predictValenceGPT2 } from "./AudioFeaturesInferenceAdapters/GTP2/ValenceModelServingAdapter";
+import { predictAcousticness as predictAcousticnessClassicML } from "./AudioFeaturesInferenceAdapters/ClassicML/AcousticnessModelServingAdapter";
+import { predictDanceability as predictDanceabilityClassicML } from "./AudioFeaturesInferenceAdapters/ClassicML/DanceabilityModelServingAdapter";
+import { predictEnergy as predictEnergyClassicML } from "./AudioFeaturesInferenceAdapters/ClassicML/EnergyModelServingAdapter";
+import { predictInstrumentalness as predictInstrumentalnessClassicML } from "./AudioFeaturesInferenceAdapters/ClassicML/InstrumentalnessModelServingAdapter";
+import { predictValence as predictValenceClassicML } from "./AudioFeaturesInferenceAdapters/ClassicML/ValenceModelServingAdapter";
 
 
 import { AudioFeatures, UserPreference } from "./entities";
@@ -17,11 +17,11 @@ import { AudioFeatures, UserPreference } from "./entities";
 export async function predictAudioFeatures(preference: UserPreference) {
 
     const [ danceability, acousticness, energy, valence, instrumentalness ] = await Promise.all([
-        predictDanceabilityGPT2(preference),
-        predictAcousticnessGPT2(preference),
-        predictEnergyGPT2(preference),
-        predictValenceGPT2(preference),
-        predictInstrumentalnessGPT2(preference)
+        predictDanceabilityClassicML(preference),
+        predictAcousticnessClassicML(preference),
+        predictEnergyClassicML(preference),
+        predictValenceClassicML(preference),
+        predictInstrumentalnessClassicML(preference)
     ]);
     // const [ danceability, acousticness, energy, valence, instrumentalness ] =  [
     //     0.428,
