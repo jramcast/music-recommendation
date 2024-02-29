@@ -13,3 +13,39 @@ block content
 
     .field
     input.button.is-link(id="submit-preference", type='submit', value='Submit')
+
+
+  h2 Search by Track
+
+  // Search form
+  form(action="/", method="GET")
+    input(type="text", name="q", placeholder="Filter", value=searchTerm)
+    button(type="submit") Filter
+
+  ul
+  each song in songs
+    li
+      h3 #{song.artist} - #{song.trackName}
+      a.button.is-link(href=`/recommend?acousticness=${song.audiofeatures.acousticness}&danceability=${song.audiofeatures.danceability}&instrumentalness=${song.audiofeatures.instrumentalness}&energy=${song.audiofeatures.energy}&valence=${song.audiofeatures.valence}`) Recommend
+      ul
+        li Acousticness #{song.audiofeatures.acousticness}
+        li Danceability #{song.audiofeatures.danceability}
+        li Instrumentalness #{song.audiofeatures.instrumentalness}
+        li Energy #{song.audiofeatures.energy}
+        li Valence #{song.audiofeatures.valence}
+  // Pagination
+  if totalPages > 1
+    ul.pagination
+      li
+        a(href=`/?q=${searchTerm}&page=1`) First
+      - if (currentPage > 1)
+        li
+          a(href=`/?q=${searchTerm}&page=${currentPage - 1}`) Previous
+      - for (let i = 1; i <= totalPages; i++)
+        li
+          a(href=`/?q=${searchTerm}&page=${i}`)= i
+      - if (currentPage < totalPages)
+        li
+          a(href=`/?q=${searchTerm}&page=${currentPage + 1}`) Next
+      li
+        a(href=`/?q=${searchTerm}&page=${totalPages}`) Last

@@ -34,8 +34,6 @@ export class UserPreferenceAsText extends UserPreference {
             .map(word => word.trim())
             .filter(word => !stopwords.includes(word));
 
-        console.log(preferenceWords);
-
         const tagWeights = topTags
             .map(tag => tag.toLocaleLowerCase())
             .map(tag => {
@@ -49,9 +47,6 @@ export class UserPreferenceAsText extends UserPreference {
                 }
                 return 0;
             });
-
-        console.log(tagWeights);
-        console.log("---");
 
         var randomArray = [];
         for (var i = 0; i < topTags.length; i++) {

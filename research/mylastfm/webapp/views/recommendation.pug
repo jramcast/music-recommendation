@@ -1,39 +1,96 @@
 extends layout
 
 block content
-  h1 Recommendation
-  p Based on your input:
-  pre= preference.text
-  p These audio features have been infered:
-  ul
-    li Acousticness #{recommendation.features.acousticness}
-    li Danceability #{recommendation.features.danceability}
-    li Instrumentalness #{recommendation.features.instrumentalness}
-    li Energy #{recommendation.features.energy}
-    li Valence #{recommendation.features.valence}
+  h1.title Recommendation
+  #recommendation.content(data-recommendation=recommendation)
+    p Based on your input:
+    pre= preference.text
+    p These audio features have been infered:
+    ul
+      li
+        strong Acousticness
+        .block #{recommendation.features.acousticness}
+      li
+        strong Danceability:
+        .block #{recommendation.features.danceability}
+      li
+        strong Instrumentalness
+        .block #{recommendation.features.instrumentalness}
+      li
+        strong Energy
+        .block #{recommendation.features.energy}
+      li
+        strong Valence
+        .block #{recommendation.features.valence}
 
-  p These are the tracks closest to those features:
+    p These are the tracks closest to those features:
 
-  ol
   each recommendedTrack in recommendation.tracks
-    li
-      .title #{recommendedTrack.track.artist} - #{recommendedTrack.track.trackName}
-      p Acousticness Distance: #{recommendedTrack.distance.acousticnessDistance.toFixed(8)}
-      p Danceability Distance: #{recommendedTrack.distance.danceabilityDistance.toFixed(8)}
-      p Instrumentalness Distance: #{recommendedTrack.distance.instrumentalnessDistance.toFixed(8)}
-      p Energy Distance: #{recommendedTrack.distance.energyDistance.toFixed(8)}
-      p Valence Distance: #{recommendedTrack.distance.valenceDistance.toFixed(8)}
-      p
-        iframe(
-          style="border-radius:12px",
-          src=`https://open.spotify.com/embed/track/${recommendedTrack.spotifyTrackID}?utm_source=generator`,
-          width="500",
-          height="200",
-          frameBorder="0",
-          allowfullscreen="",
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture",
-          loading="lazy"
-        )
-      p Tags:
-        each tag in recommendedTrack.tags 
-          span  #{tag.tag}:#{tag.weight}
+    .box
+      h2.title.is-4
+        a(
+          href=`/recommend?acousticness=${recommendedTrack.track.audiofeatures.acousticness}&danceability=${recommendedTrack.track.audiofeatures.danceability}&instrumentalness=${recommendedTrack.track.audiofeatures.instrumentalness}&energy=${recommendedTrack.track.audiofeatures.energy}&valence=${recommendedTrack.track.audiofeatures.valence}`) #{recommendedTrack.track.artist} - #{recommendedTrack.track.trackName}
+
+      iframe(
+        style="border-radius:12px",
+        src=`https://open.spotify.com/embed/track/${recommendedTrack.spotifyTrackID}?utm_source=generator`,
+        width="100%",
+        height="200px",
+        frameBorder="1",
+        allowfullscreen="",
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture",
+        loading="lazy"
+      )
+
+      .columns.is-centered
+        .column.is-two-fifths
+          br
+          .block Track's audio features and distance to the inferred features.
+          br
+          table.table.is-fullwidth
+            thead
+              tr
+                th Feature
+                th Value
+                th(title="Distance to infered features") Distance
+            tbody
+              tr
+                th Acousticness
+                td #{recommendedTrack.track.audiofeatures.acousticness}
+                td #{recommendedTrack.distance.acousticnessDistance.toFixed(8)}
+              tr
+                th Danceability
+                td #{recommendedTrack.track.audiofeatures.danceability}
+                td #{recommendedTrack.distance.danceabilityDistance.toFixed(8)}
+              tr
+                th Instrumentalness
+                td #{recommendedTrack.track.audiofeatures.instrumentalness}
+                td #{recommendedTrack.distance.instrumentalnessDistance.toFixed(8)}
+              tr
+                th Energy
+                td #{recommendedTrack.track.audiofeatures.energy}
+                td #{recommendedTrack.distance.energyDistance.toFixed(8)}
+              tr
+                th Valence
+                td #{recommendedTrack.track.audiofeatures.valence}
+                td #{recommendedTrack.distance.valenceDistance.toFixed(8)}
+          br
+        .column
+            canvas.track-features-chart(data-spotify-id=recommendedTrack.spotifyTrackID, data-recommended-track=recommendedTrack)
+
+      if recommendedTrack.tags.length
+        .block Last.fm tags have been found for this track.
+
+      .block
+        .field.is-grouped.is-grouped-multiline
+          each tag in recommendedTrack.tags
+            .control
+              .tags.has-addons
+                span.tag.is-info #{tag.tag}
+                span.tag #{tag.weight}
+
+
+block scripts
+  script(src="https://cdn.jsdelivr.net/npm/chart.js")
+  script
+    include script.js

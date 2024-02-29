@@ -113,8 +113,6 @@ function knn(audioFeatures: AudioFeatures, dataset: SpotifyTrack[], k: number): 
 
     const topK = distances.slice(0, k);
 
-    console.log(topK);
-
     return topK.map(item => item.song);
 }
 

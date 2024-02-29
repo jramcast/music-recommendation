@@ -6,8 +6,6 @@ export async function predictAudioFeature(preference: UserPreference, endpoint: 
 
     const payload = preference;
     const url = endpoint.replace("<feature>", feature)
-    console.log(url);
-    console.log(JSON.stringify(payload))
     const response = await fetch(url, {
         method: "POST",
         headers: {
